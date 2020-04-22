@@ -123,8 +123,6 @@ public class API {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTeam(@HeaderParam("X-Auth-API-Key") String authKey) {
         String teamName = "404 Team Name Not Found";
-        String sarahId = "12145986";
-        String amberlynId = "12062818";
         String[] teamMemberSids = {"12145986", "12062818"};
         String responseString = "{}";
         Map<String,Object> responseMap = new HashMap<>();
