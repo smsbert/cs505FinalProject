@@ -12,11 +12,11 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-
 public class TopicConnector {
 
     private Gson gson;
-    final Type typeOf = new TypeToken<List<Map<String,String>>>(){}.getType();
+    final Type typeOf = new TypeToken<List<Map<String, String>>>() {
+    }.getType();
 
     private String EXCHANGE_NAME = "patient_data";
 
@@ -28,10 +28,15 @@ public class TopicConnector {
 
         try {
 
-            String hostname = "";
-            String username = "";
-            String password = "";
-            String virtualhost = "";
+            // String hostname = "";
+            // String username = "";
+            // String password = "";
+            // String virtualhost = "";
+            String username = "student";
+            String password = "student01";
+            String hostname = "128.163.202.61";
+            String virtualhost = "patient_feed";
+
 
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(hostname);
