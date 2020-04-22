@@ -116,22 +116,29 @@ public class API {
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
-    // TODO: implement all functions, right now they return 400 status until implemeneted
+    // TODO: implement all functions
     // Application Management Functions 
     @GET
     @Path("/getteam")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTeam(@HeaderParam("X-Auth-API-Key") String authKey) {
         String teamName = "404 Team Name Not Found";
-        int[] teamMemberSids = {12145986, 12062818};
+        String sarahId = "12145986";
+        String amberlynId = "12062818";
+        String[] teamMemberSids = {"12145986", "12062818"};
+        String responseString = "{}";
+        Map<String,Object> responseMap = new HashMap<>();
+
         int appStatusCode = 0;
         // if(){ // if app is online
         //     appStatusCode = 1;
         // }
-        return Response.ok().header("team_name", teamName)
-            .header("Team_members_sids", teamMemberSids)
-            .header("app_status_code", appStatusCode).build();
-        // return Response.status(400).build();
+
+        responseMap.put("team_name", teamName);
+        responseMap.put("Team_members_sids", teamMemberSids);
+        responseMap.put("app_status_code", String.valueOf(appStatusCode));
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
     @GET
@@ -140,12 +147,15 @@ public class API {
     public Response reset(@HeaderParam("X-Auth-API-Key") String authKey) {
         int resetStatusCode = 0;
         boolean wasReset = false;
+        String responseString = "{}";
+        Map<String,Object> responseMap = new HashMap<>();
         // attempt to reset 
 
-        // update reset status
-        // if()
-        return Response.ok().header("reset_status_code", resetStatusCode).build();
-        // return Response.status(400).build();
+        // update reset status if reset was successful
+
+        responseMap.put("reset_status_code", String.valueOf(resetStatusCode));
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
 
@@ -153,25 +163,49 @@ public class API {
     @GET
     @Path("/zipalertlist")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response zipAlertList(@HeaderParam("X-Auth-API-Key") String authKey) {
-       
-        return Response.status(400).build();
+    public Response zipAlertList(@HeaderParam("X-Auth-API-Key") String alertStatus) {
+        String[] zipList = {};
+        boolean alertState = false; // growth of 2X over a 15 second time interval then true
+        String responseString = "{}";
+        Map<String,Object> responseMap = new HashMap<>();
+        
+        responseMap.put("ziplist", zipList);
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
     @GET
     @Path("/alertlist")
     @Produces(MediaType.APPLICATION_JSON)
     public Response alertList(@HeaderParam("X-Auth-API-Key") String authKey) {
+        int statusState = 0;
+
+        // if(){ // state is in alert
+        //     statusState = 1;
+        // }
+
+        String responseString = "{}";
+        Map<String,Object> responseMap = new HashMap<>();
         
-        return Response.status(400).build();
+        responseMap.put("state_status", String.valueOf(statusState));
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
     
     @GET
     @Path("/testcount")
     @Produces(MediaType.APPLICATION_JSON)
     public Response testCount(@HeaderParam("X-Auth-API-Key") String authKey) {
-     
-        return Response.status(400).build();
+        int numPositive = 0;
+        int numNegative = 0;
+
+        String responseString = "{}";
+        Map<String,Object> responseMap = new HashMap<>();
+        
+        responseMap.put("positive_test", String.valueOf(numPositive));
+        responseMap.put("negative_test", String.valueOf(numNegative));
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
 
@@ -180,16 +214,35 @@ public class API {
     @Path("/getpatient/{mrn}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPatient(@HeaderParam("X-Auth-API-Key") String authKey) {
-      
-        return Response.status(400).build();
+        String mrn = "";
+        String locationCode = "";
+
+
+        String responseString = "{}";
+        Map<String,Object> responseMap = new HashMap<>();
+        
+        responseMap.put("mrn", mrn);
+        responseMap.put("location_code", locationCode);
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
     @GET
     @Path("/gethospital/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getHospital(@HeaderParam("X-Auth-API-Key") String authKey) {
-       
-        return Response.status(400).build();
+        int totalBeds = 0;
+        int availableBeds = 0;
+        String zipCode = "";
+
+        String responseString = "{}";
+        Map<String,Object> responseMap = new HashMap<>();
+        
+        responseMap.put("total_beds", String.valueOf(totalBeds));
+        responseMap.put("avalable_beds", String.valueOf(availableBeds));
+        responseMap.put("zipcode", zipCode);
+        responseString = gson.toJson(responseMap);
+        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
 }
