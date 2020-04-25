@@ -6,7 +6,6 @@ import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
-
 public class DatabaseSetup {
 
     private OrientDB orientdb;
@@ -17,7 +16,7 @@ public class DatabaseSetup {
         if (orientdb.exists(name)) {
             orientdb.drop(name);
         }
-        
+
         // Create New Database
         orientdb.create(name, ODatabaseType.PLOCAL);
 
@@ -26,37 +25,37 @@ public class DatabaseSetup {
     }
 
     // public void printJSONDB(String filepath){
-    
-    //     BufferedReader reader = new BufferedReader(new FileReader (filepath));
-    //     JSONArray data = json.load(reader);
-    //     with open(filepath) as f {
-    //         data = json.load(f);
-    //     }
-    
-    //     for (Object key : data) {
-            
-    //         String name = data.get(key).get("name");
-    //         String wikiUrl = data.get(key).get("wikiUrl");
-    //         String wikiImage = data.get(key).get("wikiImage");
-    //         String degreeLists = data.get(key).get("degreeLists");
-    
-    //         System.out.print("json key:\t\t" + key);
-    //         System.out.print("name:\t\t\t" + name);
-    
-    //         // Most people are on Wikipedia, but not everyone
-    //         if (wikiUrl == null) {
-    //             System.out.print("wikiUrl:\t\t" + wikiUrl);
-    //         }
-    //         if (wikiImage == null) {
-    //             System.out.print("wikiImage:\t\t" + wikiImage);
-    //         }
-    
-    //         System.out.print(degreeLists);
-    //         System.out.print("");
-    //     }
+
+    // BufferedReader reader = new BufferedReader(new FileReader (filepath));
+    // JSONArray data = json.load(reader);
+    // with open(filepath) as f {
+    // data = json.load(f);
     // }
 
-    public void createHospitalClass(OrientGraph graphDB){
+    // for (Object key : data) {
+
+    // String name = data.get(key).get("name");
+    // String wikiUrl = data.get(key).get("wikiUrl");
+    // String wikiImage = data.get(key).get("wikiImage");
+    // String degreeLists = data.get(key).get("degreeLists");
+
+    // System.out.print("json key:\t\t" + key);
+    // System.out.print("name:\t\t\t" + name);
+
+    // // Most people are on Wikipedia, but not everyone
+    // if (wikiUrl == null) {
+    // System.out.print("wikiUrl:\t\t" + wikiUrl);
+    // }
+    // if (wikiImage == null) {
+    // System.out.print("wikiImage:\t\t" + wikiImage);
+    // }
+
+    // System.out.print(degreeLists);
+    // System.out.print("");
+    // }
+    // }
+
+    public void createHospitalClass(OrientGraph graphDB) {
         graphDB.command(new OCommandSQL("CREATE VERTEX Hospital EXTENDS V;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY Hospital.id STRING;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY Hospital.name STRING;")).execute();
@@ -75,7 +74,7 @@ public class DatabaseSetup {
         graphDB.command(new OCommandSQL("CREATE PROPERTY Hospital.helipad BOOLEAN;")).execute();
     }
 
-    public void createKYZipDetailsClass(OrientGraph graphDB){
+    public void createKYZipDetailsClass(OrientGraph graphDB) {
         graphDB.command(new OCommandSQL("CREATE VERTEX ZipDetails EXTENDS V;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY ZipDetails.zip STRING;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY ZipDetails.zipcodeName STRING;")).execute();
@@ -85,14 +84,14 @@ public class DatabaseSetup {
 
     }
 
-    public void createKYZipDistanceClass(OrientGraph graphDB){
+    public void createKYZipDistanceClass(OrientGraph graphDB) {
         graphDB.command(new OCommandSQL("CREATE VERTEX ZipDistamce EXTENDS V;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY ZipDistamce.zipFrom STRING;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY ZipDistamce.zipTo STRING;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY ZipDistamce.distance FLOAT;")).execute();
     }
 
-    public void createPatientClass(OrientGraph graphDB){
+    public void createPatientClass(OrientGraph graphDB) {
         graphDB.command(new OCommandSQL("CREATE VERTEX Patient EXTENDS V;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY Patient.firstName STRING;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY Patient.lastName STRING;")).execute();
@@ -101,9 +100,44 @@ public class DatabaseSetup {
         graphDB.command(new OCommandSQL("CREATE PROPERTY Patient.statusCode STRING;")).execute();
     }
 
-    
-    public void loadDB(String filepath){
-    
+    public void updateHospitalDB(String filepath) {
+        String dbname = "patient";
+        String login = "root";
+        String password = "rootpwd";
+        int updatedBedCount = 0;
+        String hospitalId = "";
+
+        OrientGraph graphDB = new OrientGraph("localhost:patient", login, password);
+        graphDB.command(
+                new OCommandSQL("UPDATE Hospital availableBeds = " + updatedBedCount + "WHERE id = " + hospitalId))
+                .execute();
+    }
+
+    public void addPatientsToDB(String filepath) {
+        // go thourhg file and add each patient to database
+        String dbname = "patient";
+        String login = "root";
+        String password = "rootpwd";
+        OrientGraph graphDB = new OrientGraph("localhost:patient", login, password);
+        // open and parse local json file
+        // with open(filepath) as f {
+        //     data = json.load(f);
+        // }
+        // // loop through each key in the json and create a new patient with the info in the database
+        // for (Object key : data) {
+        //     String firstname = data.get(key).get("first_name");
+        //     String lastName = data.get(key).get("last_name");
+        //     String mrn = data.get(key).get("mrn");
+        //     String zipcode = str(data.get(key).get("zip_code"));
+        //     String statusCode = str(data.get(key).get("patient_status_code"));
+
+        //     graphDB.command("CREATE VERTEX Person SET firstName = '" + firstName + "', lastName = '" + lastName
+        //             + "', mrn = '" + mrn + "', zipcode = '" + zipcode + "', statusCode = '" + statusCode + "'");
+        // }
+    }
+
+    public void loadDB(String filepath) {
+
         // database name
         String dbname = "patient";
         // database login is root by default
@@ -128,7 +162,8 @@ public class DatabaseSetup {
         graphDB.command(new OCommandSQL("CREATE PROPERTY Hospital.state STRING;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY Hospital.zip STRING;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY Hospital.type STRING;")).execute();
-        graphDB.command(new OCommandSQL("CREATE PROPERTY Hospital.beds INTEGER;")).execute();
+        graphDB.command(new OCommandSQL("CREATE PROPERTY Hospital.totalBeds INTEGER;")).execute();
+        graphDB.command(new OCommandSQL("CREATE PROPERTY Hospital.availableBeds INTEGER;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY Hospital.county STRING;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY Hospital.country STRING;")).execute();
         graphDB.command(new OCommandSQL("CREATE PROPERTY Hospital.lattitude FLOAT;")).execute();
@@ -159,45 +194,46 @@ public class DatabaseSetup {
         graphDB.command(new OCommandSQL("CREATE PROPERTY Patient.statusCode STRING;")).execute();
 
         // create client to connect to local orientdb docker container
-        // orientdb = new OrientDB("localhost:2424", login, password, OrientDBConfig.defaultConfig());
+        // orientdb = new OrientDB("localhost:2424", login, password,
+        // OrientDBConfig.defaultConfig());
         // // session_id = client.connect(login, password);
-        
+
         // // remove old database and create new one
         // reset_db(dbname);
-        
+
         // // open the database we are interested in
         // orientdb.open(dbname, login, password);
         // // client.db_open(dbname, login, password);
-    
+
         // // open and parse local json file
         // with open(filepath) as f {
-        //     data = json.load(f)''
+        // data = json.load(f)''
         // }
-    
-    
-        // // loop through each key in the json database and create a new vertex, V with the id in the database
+
+        // // loop through each key in the json database and create a new vertex, V with
+        // the id in the database
         // for (Object key : Data) {
-        //     firstname = data.get(key).get("first_name");
-        //     lastName = data.get(key).get("last_name");
-        //     mrn = data.get(key).get("mrn");
-        //     zipcode = str(data.get(key).get("zip_code"));
-        //     statusCode = str(data.get(key).get("patient_status_code"));
-    
-        //     client.command("CREATE VERTEX Person SET firstName = '" + firstName + "', lastName = '" + lastName + "', mrn = '" + mrn + "', zipcode = '" + zipcode + "', statusCode = '" + statusCode + "'");
+        // firstname = data.get(key).get("first_name");
+        // lastName = data.get(key).get("last_name");
+        // mrn = data.get(key).get("mrn");
+        // zipcode = str(data.get(key).get("zip_code"));
+        // statusCode = str(data.get(key).get("patient_status_code"));
+
+        // client.command("CREATE VERTEX Person SET firstName = '" + firstName + "',
+        // lastName = '" + lastName + "', mrn = '" + mrn + "', zipcode = '" + zipcode +
+        // "', statusCode = '" + statusCode + "'");
         // }
-    
-    
+
         // loop through each key creating edges from advisor to advise
         // for (Object key : Data) {
-        //     advisorNodeId = str(getrid(client,key));
-        //     for student in data.get(key)["students"] {
-        //         studentNodeId = str(getrid(client,student));
-        //         client.command("CREATE EDGE FROM " + advisorNodeId + " TO " + studentNodeId);
-        //     }
+        // advisorNodeId = str(getrid(client,key));
+        // for student in data.get(key)["students"] {
+        // studentNodeId = str(getrid(client,student));
+        // client.command("CREATE EDGE FROM " + advisorNodeId + " TO " + studentNodeId);
         // }
-    
+        // }
+
         // graphDB.close();
     }
 
 }
-
