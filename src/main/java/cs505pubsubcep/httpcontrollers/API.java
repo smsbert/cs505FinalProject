@@ -14,7 +14,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.google.gson.Gson;
+import com.orientechnologies.orient.core.sql.OCommandSQL;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
+import cs505pubsubcep.DatabaseSetup;
 import cs505pubsubcep.Launcher;
 import cs505pubsubcep.CEP.accessRecord;
 
@@ -25,6 +28,10 @@ public class API {
     private javax.inject.Provider<org.glassfish.grizzly.http.server.Request> request;
 
     private Gson gson;
+
+    private String[] alertZipList;
+
+    public DatabaseSetup dbSetup = new DatabaseSetup();
 
     public API() {
         gson = new Gson();
@@ -147,9 +154,13 @@ public class API {
         boolean wasReset = false;
         String responseString = "{}";
         Map<String,Object> responseMap = new HashMap<>();
-        // attempt to reset 
-
+        
+        // attempt to reset - returns true if successful
+        wasReset = dbSetup.reset_db("filename");
         // update reset status if reset was successful
+        if(wasReset == true){
+            resetStatusCode = 1;
+        }
 
         responseMap.put("reset_status_code", String.valueOf(resetStatusCode));
         responseString = gson.toJson(responseMap);
@@ -167,6 +178,7 @@ public class API {
         String responseString = "{}";
         Map<String,Object> responseMap = new HashMap<>();
         
+        alertZipList = zipList;
         responseMap.put("ziplist", zipList);
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
@@ -177,13 +189,12 @@ public class API {
     @Produces(MediaType.APPLICATION_JSON)
     public Response alertList(@HeaderParam("X-Auth-API-Key") String authKey) {
         int statusState = 0;
-
-        // if(){ // state is in alert
-        //     statusState = 1;
-        // }
-
         String responseString = "{}";
         Map<String,Object> responseMap = new HashMap<>();
+
+        if(alertZipList.length >= 5){ // state is in alert if at least five zipcodes are in alert
+            statusState = 1;
+        }
         
         responseMap.put("state_status", String.valueOf(statusState));
         responseString = gson.toJson(responseMap);
@@ -199,6 +210,16 @@ public class API {
 
         String responseString = "{}";
         Map<String,Object> responseMap = new HashMap<>();
+
+        OrientGraph graphDB = new OrientGraph("localhost:patient", "root", "rootpwd");
+        int code1 = graphDB.command(new OCommandSQL("SELECT COUNT(*) FROM Patient WHERE statusCode = 1")).execute();
+        int code2 = graphDB.command(new OCommandSQL("SELECT COUNT(*) FROM Patient WHERE statusCode =  2")).execute();
+        int code4 = graphDB.command(new OCommandSQL("SELECT COUNT(*) FROM Patient WHERE statusCode =  4")).execute();
+        int code5 = graphDB.command(new OCommandSQL("SELECT COUNT(*) FROM Patient WHERE statusCode =  5")).execute();
+        int code6 = graphDB.command(new OCommandSQL("SELECT COUNT(*) FROM Patient WHERE statusCode =  6")).execute();
+
+        numPositive = code2 + code5 + code6;
+        numNegative = code1 + code4;
         
         responseMap.put("positive_test", String.valueOf(numPositive));
         responseMap.put("negative_test", String.valueOf(numNegative));
@@ -214,6 +235,8 @@ public class API {
     public Response getPatient(@HeaderParam("X-Auth-API-Key") String authKey) {
         String mrn = "";
         String locationCode = "";
+        int homeAssignment = 0;
+        int noAssignment = -1;
 
 
         String responseString = "{}";
@@ -229,12 +252,15 @@ public class API {
     @Path("/gethospital/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getHospital(@HeaderParam("X-Auth-API-Key") String authKey) {
-        int totalBeds = 0;
-        int availableBeds = 0;
-        String zipCode = "";
-
         String responseString = "{}";
         Map<String,Object> responseMap = new HashMap<>();
+        String id = ""; //get id from path
+
+        OrientGraph graphDB = new OrientGraph("localhost:patient", "root", "rootpwd");
+        int totalBeds = graphDB.command(new OCommandSQL("SELECT beds FROM Hospital WHERE id = ")).execute();
+        int zipCode = graphDB.command(new OCommandSQL("SELECT zip FROM Hospital WHERE id =  ")).execute();
+        String availableBeds = ""; // update based on patients status code 3, 5, 6 where they need a bed
+        // get patients with status 3, 5, 6 that are at that hospital to reduce bed number 
         
         responseMap.put("total_beds", String.valueOf(totalBeds));
         responseMap.put("avalable_beds", String.valueOf(availableBeds));
