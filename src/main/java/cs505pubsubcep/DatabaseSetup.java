@@ -11,6 +11,8 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
+// docker run -d --name orientdb -p 2424:2424 -p 2480:2480 -e ORIENTDB_ROOT_PASSWORD=rootpwd orientdb:2.2
+
 public class DatabaseSetup {
 
     private static OrientDB orientdb;
@@ -36,7 +38,8 @@ public class DatabaseSetup {
             wasSuccessful = false;
             System.out.println(e);
         }
-
+        
+        orientdb.close();
         // if successful
         return wasSuccessful;
     }
@@ -45,7 +48,7 @@ public class DatabaseSetup {
         String dbName = "patient";
         boolean wasReset = reset_db(dbName);
         if(wasReset == true){
-            loadDB(dbName);
+            createDB(dbName);
         }
     }
 
@@ -166,10 +169,7 @@ public class DatabaseSetup {
         // }
     }
 
-    public static void loadDB(String filepath) {
-
-        // database name
-        String dbname = "patient";
+    public static void createDB(String dbname) {
 
         // connect database
         orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
@@ -196,6 +196,6 @@ public class DatabaseSetup {
         } catch (Exception e){
             System.out.println(e);
         }
-
+        orientdb.close();
     }
 }
