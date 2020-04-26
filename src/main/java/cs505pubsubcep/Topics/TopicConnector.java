@@ -12,6 +12,10 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
+import java.io.File;
+import java.io.FileWriter;   // Import the FileWriter class
+import java.io.IOException;  // Import the IOException class to handle errors
+
 public class TopicConnector {
 
     private Gson gson;
@@ -28,15 +32,10 @@ public class TopicConnector {
 
         try {
 
-            // String hostname = "";
-            // String username = "";
-            // String password = "";
-            // String virtualhost = "";
             String username = "student";
-            String password = "student01";
-            String hostname = "128.163.202.61";
+	    String password = "student01";
+	    String hostname = "128.163.202.61";
             String virtualhost = "patient_feed";
-
 
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(hostname);
@@ -51,7 +50,9 @@ public class TopicConnector {
 
             channel.queueBind(queueName, EXCHANGE_NAME, "#");
 
-
+	    CreateFile();
+	    FileWriter myWriter = new FileWriter("inputs.txt", true);
+	    myWriter.write("{'patientInfo' : [");
             System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
@@ -61,20 +62,43 @@ public class TopicConnector {
                         delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
 
                 List<Map<String,String>> incomingList = gson.fromJson(message, typeOf);
-                for(Map<String,String> map : incomingList) {
+                //WriteToFile(message);
+		
+		for(Map<String,String> map : incomingList) {
                     System.out.println("INPUT CEP EVENT: " +  map);
-                    Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
+		    
+		    myWriter.write(gson.toJson(map) + ", ");
+                    
+		    Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                 }
                 System.out.println("");
                 System.out.println("");
 
             };
-
+	    
+	    System.out.println("done?");
+	    myWriter.write("]}");
+	    myWriter.close();
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
             });
         } catch (Exception ex) {
             ex.printStackTrace();
         }
 }
+
+  public void CreateFile() {
+    try {
+      File myObj = new File("inputs.txt");
+      if (myObj.createNewFile()) {
+        System.out.println("File created: " + myObj.getName());
+
+      } else {
+        System.out.println("File already exists.");
+      }
+    } catch (IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+  }
 
 }
