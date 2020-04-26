@@ -129,6 +129,7 @@ public class DatabaseSetup {
         patient.createProperty("mrn", OType.STRING);
         patient.createProperty("zipcode", OType.STRING);
         patient.createProperty("statusCode", OType.STRING);
+        patient.createProperty("dateTime", OType.DATETIME);
         return patient;
     }
 
