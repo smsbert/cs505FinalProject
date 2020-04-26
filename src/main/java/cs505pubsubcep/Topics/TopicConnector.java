@@ -42,6 +42,7 @@ public class TopicConnector {
             String hostname = "128.163.202.61";
             String virtualhost = "patient_feed";
 
+
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(hostname);
             factory.setUsername(username);
@@ -87,6 +88,9 @@ public class TopicConnector {
                         patient.save();
                         Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                     }
+                    System.out.println(" [x] Received Batch'" +
+                    delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
+
                 }
                 System.out.println("");
                 System.out.println("");
@@ -99,5 +103,4 @@ public class TopicConnector {
             ex.printStackTrace();
         }
     }
-
 }
