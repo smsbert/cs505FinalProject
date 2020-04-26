@@ -19,6 +19,8 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
             //String[] sstr = String.valueOf(msg).split(":");
             //String[] outval = sstr[2].split("}");
             //Launcher.accessCount = Long.parseLong(outval[0]);
+	    //System.out.println(outval);
+	    //System.out.println(Launcher.accessCount);
 
         } catch(Exception ex) {
             ex.printStackTrace();
