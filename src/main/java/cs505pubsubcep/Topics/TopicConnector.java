@@ -51,7 +51,8 @@ public class TopicConnector {
             channel.queueBind(queueName, EXCHANGE_NAME, "#");
 
 	    CreateFile();
-
+	    FileWriter myWriter = new FileWriter("inputs.txt", true);
+	    myWriter.write("{'patientInfo' : [");
             System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
@@ -61,17 +62,23 @@ public class TopicConnector {
                         delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
 
                 List<Map<String,String>> incomingList = gson.fromJson(message, typeOf);
-                System.out.println(incomingList);
+                //WriteToFile(message);
+		
 		for(Map<String,String> map : incomingList) {
                     System.out.println("INPUT CEP EVENT: " +  map);
-		    //WriteToFile(gson.toJson(map));
-                    Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
+		    
+		    myWriter.write(gson.toJson(map) + ", ");
+                    
+		    Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                 }
                 System.out.println("");
                 System.out.println("");
 
             };
-
+	    
+	    System.out.println("done?");
+	    myWriter.write("]}");
+	    myWriter.close();
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
             });
         } catch (Exception ex) {
@@ -79,23 +86,12 @@ public class TopicConnector {
         }
 }
 
-  public void WriteToFile(String args) {
-    try {
-      FileWriter myWriter = new FileWriter("inputs.txt");
-      myWriter.write(args);
-      myWriter.close();
-      System.out.println("Successfully wrote to the file.");
-    } catch (IOException e) {
-      System.out.println("An error occurred.");
-      e.printStackTrace();
-    }
-  }
-
   public void CreateFile() {
     try {
       File myObj = new File("inputs.txt");
       if (myObj.createNewFile()) {
         System.out.println("File created: " + myObj.getName());
+
       } else {
         System.out.println("File already exists.");
       }
