@@ -27,6 +27,12 @@ public class Launcher {
 
     public static void main(String[] args) throws IOException {
 
+        String dbName = "patient";
+        boolean wasReset = DatabaseSetup.reset_db(dbName);
+        if(wasReset == true){
+            DatabaseSetup.createDB(dbName);
+        }
+
         System.out.println("Starting CEP...");
         //Embedded database initialization
 

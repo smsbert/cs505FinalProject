@@ -57,19 +57,19 @@ public class TopicConnector {
             channel.queueBind(queueName, EXCHANGE_NAME, "#");
 
             System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
-
+            
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-
                 String message = new String(delivery.getBody(), "UTF-8");
                 System.out.println(
-                        " [x] Received Batch'" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
-
+                    " [x] Received Batch'" + delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
+                    
                 List<Map<String, String>> incomingList = gson.fromJson(message, typeOf);
                  // connect database
-                OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+                 OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
 
-                // open database session
-                try (ODatabaseSession db = orientdb.open("patient", "root", "rootpwd");) {
+                 // open database session
+                 
+                 try (ODatabaseSession db = orientdb.open("patient", "root", "rootpwd");) {
                     for (Map<String, String> map : incomingList) {
                         System.out.println("INPUT CEP EVENT: " + map);
                         String firstName = map.get("first_name");
@@ -96,7 +96,7 @@ public class TopicConnector {
                 System.out.println("");
                 orientdb.close();
             };
-
+            
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
             });
         } catch (Exception ex) {
