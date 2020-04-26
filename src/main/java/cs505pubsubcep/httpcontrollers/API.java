@@ -14,7 +14,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.google.gson.Gson;
+import com.orientechnologies.orient.core.db.ODatabaseSession;
+import com.orientechnologies.orient.core.db.OrientDB;
+import com.orientechnologies.orient.core.db.OrientDBConfig;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
+import com.orientechnologies.orient.core.sql.executor.OResultSet;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import cs505pubsubcep.DatabaseSetup;
@@ -37,15 +41,17 @@ public class API {
         gson = new Gson();
     }
 
-    //check local
-    //curl --header "X-Auth-API-key:1234" "http://localhost:8082/api/checkmycep"
+    // check local
+    // curl --header "X-Auth-API-key:1234" "http://localhost:8082/api/checkmycep"
 
-    //check remote
-    //curl --header "X-Auth-API-key:1234" "http://[linkblueid].cs.uky.edu:8082/api/checkmycep"
-    //curl --header "X-Auth-API-key:1234" "http://localhost:8081/api/checkmycep"
+    // check remote
+    // curl --header "X-Auth-API-key:1234"
+    // "http://[linkblueid].cs.uky.edu:8082/api/checkmycep"
+    // curl --header "X-Auth-API-key:1234" "http://localhost:8081/api/checkmycep"
 
-    //check remote
-    //curl --header "X-Auth-API-key:1234" "http://[linkblueid].cs.uky.edu:8081/api/checkmycep"
+    // check remote
+    // curl --header "X-Auth-API-key:1234"
+    // "http://[linkblueid].cs.uky.edu:8081/api/checkmycep"
 
     @GET
     @Path("/checkmycep")
@@ -54,25 +60,24 @@ public class API {
         String responseString = "{}";
         try {
 
-            //get remote ip address from request
+            // get remote ip address from request
             String remoteIP = request.get().getRemoteAddr();
-            //get the timestamp of the request
+            // get the timestamp of the request
             long access_ts = System.currentTimeMillis();
             System.out.println("IP: " + remoteIP + " Timestamp: " + access_ts);
 
-            Map<String,String> responseMap = new HashMap<>();
-            if(Launcher.cepEngine != null) {
+            Map<String, String> responseMap = new HashMap<>();
+            if (Launcher.cepEngine != null) {
 
-                    responseMap.put("success", Boolean.TRUE.toString());
-                    responseMap.put("status_desc","CEP Engine exists");
+                responseMap.put("success", Boolean.TRUE.toString());
+                responseMap.put("status_desc", "CEP Engine exists");
 
             } else {
                 responseMap.put("success", Boolean.FALSE.toString());
-                responseMap.put("status_desc","CEP Engine is null!");
+                responseMap.put("status_desc", "CEP Engine is null!");
             }
 
             responseString = gson.toJson(responseMap);
-
 
         } catch (Exception ex) {
 
@@ -93,22 +98,22 @@ public class API {
         String responseString = "{}";
         try {
 
-            //get remote ip address from request
+            // get remote ip address from request
             String remoteIP = request.get().getRemoteAddr();
-            //get the timestamp of the request
+            // get the timestamp of the request
             long access_ts = System.currentTimeMillis();
             System.out.println("IP: " + remoteIP + " Timestamp: " + access_ts);
 
-            //generate event based on access
-            String inputEvent = gson.toJson(new accessRecord(remoteIP,access_ts));
+            // generate event based on access
+            String inputEvent = gson.toJson(new accessRecord(remoteIP, access_ts));
             System.out.println("inputEvent: " + inputEvent);
 
-            //send input event to CEP
+            // send input event to CEP
             Launcher.cepEngine.input(Launcher.inputStreamName, inputEvent);
 
-            //generate a response
-            Map<String,String> responseMap = new HashMap<>();
-            responseMap.put("accesscoint",String.valueOf(Launcher.accessCount));
+            // generate a response
+            Map<String, String> responseMap = new HashMap<>();
+            responseMap.put("accesscoint", String.valueOf(Launcher.accessCount));
             responseString = gson.toJson(responseMap);
 
         } catch (Exception ex) {
@@ -124,19 +129,19 @@ public class API {
     }
 
     // TODO: implement all functions
-    // Application Management Functions 
+    // Application Management Functions
     @GET
     @Path("/getteam")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTeam(@HeaderParam("X-Auth-API-Key") String authKey) {
         String teamName = "404 Team Name Not Found";
-        String[] teamMemberSids = {"12145986", "12062818"};
+        String[] teamMemberSids = { "12145986", "12062818" };
         String responseString = "{}";
-        Map<String,Object> responseMap = new HashMap<>();
+        Map<String, Object> responseMap = new HashMap<>();
 
         int appStatusCode = 0;
         // if(){ // if app is online
-        //     appStatusCode = 1;
+        // appStatusCode = 1;
         // }
 
         responseMap.put("team_name", teamName);
@@ -153,12 +158,12 @@ public class API {
         int resetStatusCode = 0;
         boolean wasReset = false;
         String responseString = "{}";
-        Map<String,Object> responseMap = new HashMap<>();
-        
+        Map<String, Object> responseMap = new HashMap<>();
+
         // attempt to reset - returns true if successful
-        wasReset = dbSetup.reset_db("filename");
+        wasReset = DatabaseSetup.reset_db("filename");
         // update reset status if reset was successful
-        if(wasReset == true){
+        if (wasReset == true) {
             resetStatusCode = 1;
         }
 
@@ -167,8 +172,7 @@ public class API {
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
 
-
-    //Real-time Reporting Functions
+    // Real-time Reporting Functions
     @GET
     @Path("/zipalertlist")
     @Produces(MediaType.APPLICATION_JSON)
@@ -176,8 +180,8 @@ public class API {
         String[] zipList = {};
         boolean alertState = false; // growth of 2X over a 15 second time interval then true
         String responseString = "{}";
-        Map<String,Object> responseMap = new HashMap<>();
-        
+        Map<String, Object> responseMap = new HashMap<>();
+
         alertZipList = zipList;
         responseMap.put("ziplist", zipList);
         responseString = gson.toJson(responseMap);
@@ -190,36 +194,47 @@ public class API {
     public Response alertList(@HeaderParam("X-Auth-API-Key") String authKey) {
         int statusState = 0;
         String responseString = "{}";
-        Map<String,Object> responseMap = new HashMap<>();
+        Map<String, Object> responseMap = new HashMap<>();
 
-        if(alertZipList.length >= 5){ // state is in alert if at least five zipcodes are in alert
+        if (alertZipList.length >= 5) { // state is in alert if at least five zipcodes are in alert
             statusState = 1;
         }
-        
+
         responseMap.put("state_status", String.valueOf(statusState));
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
-    
+
     @GET
     @Path("/testcount")
     @Produces(MediaType.APPLICATION_JSON)
     public Response testCount(@HeaderParam("X-Auth-API-Key") String authKey) {
         int numPositive = 0;
         int numNegative = 0;
+        String dbname = "patient";
+        String login = "root";
+        String password = "rootpwd";
 
         String responseString = "{}";
         Map<String,Object> responseMap = new HashMap<>();
 
-        OrientGraph graphDB = new OrientGraph("localhost:patient", "root", "rootpwd");
-        int code1 = graphDB.command(new OCommandSQL("SELECT COUNT(*) FROM Patient WHERE statusCode = 1")).execute();
-        int code2 = graphDB.command(new OCommandSQL("SELECT COUNT(*) FROM Patient WHERE statusCode =  2")).execute();
-        int code4 = graphDB.command(new OCommandSQL("SELECT COUNT(*) FROM Patient WHERE statusCode =  4")).execute();
-        int code5 = graphDB.command(new OCommandSQL("SELECT COUNT(*) FROM Patient WHERE statusCode =  5")).execute();
-        int code6 = graphDB.command(new OCommandSQL("SELECT COUNT(*) FROM Patient WHERE statusCode =  6")).execute();
+        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
 
-        numPositive = code2 + code5 + code6;
-        numNegative = code1 + code4;
+        // open database session
+        try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
+            OResultSet code1 = db.query("SELECT COUNT(*) FROM Patient WHERE statusCode = 1");
+            OResultSet code2 = db.query("SELECT COUNT(*) FROM Patient WHERE statusCode = 2");
+            OResultSet code3 = db.query("SELECT COUNT(*) FROM Patient WHERE statusCode = 3");
+            OResultSet code4 = db.query("SELECT COUNT(*) FROM Patient WHERE statusCode = 4");
+            OResultSet code5 = db.query("SELECT COUNT(*) FROM Patient WHERE statusCode = 5");
+            OResultSet code6 = db.query("SELECT COUNT(*) FROM Patient WHERE statusCode = 6");
+            // numPositive = code2. + code5 + code6;
+            // numNegative = code1 + code4;
+
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
         
         responseMap.put("positive_test", String.valueOf(numPositive));
         responseMap.put("negative_test", String.valueOf(numNegative));
@@ -252,19 +267,29 @@ public class API {
     @Path("/gethospital/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getHospital(@HeaderParam("X-Auth-API-Key") String authKey) {
+        String dbname = "patient";
+        String login = "root";
+        String password = "rootpwd";
         String responseString = "{}";
         Map<String,Object> responseMap = new HashMap<>();
         String id = ""; //get id from path
 
-        OrientGraph graphDB = new OrientGraph("localhost:patient", "root", "rootpwd");
-        int totalBeds = graphDB.command(new OCommandSQL("SELECT beds FROM Hospital WHERE id = ")).execute();
-        int zipCode = graphDB.command(new OCommandSQL("SELECT zip FROM Hospital WHERE id =  ")).execute();
-        String availableBeds = ""; // update based on patients status code 3, 5, 6 where they need a bed
+        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+
+        // open database session
+        try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
+            OResultSet totalBeds = db.query("SELECT beds FROM Hospital WHERE id = ", id);
+            OResultSet zipCode = db.query("SELECT zip FROM Hospital WHERE id =  ", id);
+            String availableBeds = ""; // update based on patients status code 3, 5, 6 where they need a bed
         // get patients with status 3, 5, 6 that are at that hospital to reduce bed number 
+            responseMap.put("total_beds", String.valueOf(totalBeds));
+            responseMap.put("avalable_beds", String.valueOf(availableBeds));
+            responseMap.put("zipcode", zipCode);
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
         
-        responseMap.put("total_beds", String.valueOf(totalBeds));
-        responseMap.put("avalable_beds", String.valueOf(availableBeds));
-        responseMap.put("zipcode", zipCode);
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }

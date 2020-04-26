@@ -11,6 +11,7 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
 
+// java -jar target/cs505-pubsub-cep-template-1.0-SNAPSHOT.jar
 
 public class Launcher {
 
@@ -24,7 +25,6 @@ public class Launcher {
     public static CEPEngine cepEngine = null;
 
     public static void main(String[] args) throws IOException {
-
 
         System.out.println("Starting CEP...");
         //Embedded database initialization
