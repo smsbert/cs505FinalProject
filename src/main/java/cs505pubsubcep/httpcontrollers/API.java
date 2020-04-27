@@ -164,7 +164,7 @@ public class API {
 
         // TODO: error when api called from curl on vm
         // attempt to reset - returns true if successful
-        //wasReset = DatabaseSetup.reset_db(dbName);
+        wasReset = DatabaseSetup.reset_db(dbName);
         // update reset status if reset was successful
         if (wasReset == true) {
             resetStatusCode = 1;
@@ -182,14 +182,20 @@ public class API {
     @Produces(MediaType.APPLICATION_JSON)
     public Response zipAlertList(@HeaderParam("X-Auth-API-Key") String alertStatus) {
         String[] zipList = {};
-        boolean alertState = false; // growth of 2X over a 15 second time interval then true
+        // boolean alertState = false; // growth of 2X over a 15 second time interval then true
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
 
         // TODO: determine if zipcode is on alert based on this 15 and previous 15
         // second intervals of patient data
-        alertZipList = zipList;
+        // alertZipList = zipList;
+
+        String startTime = "00";
+        String endTime = "15";
+
         responseMap.put("ziplist", zipList);
+        responseMap.put("startTime", startTime);
+        responseMap.put("endTime", endTime);
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
