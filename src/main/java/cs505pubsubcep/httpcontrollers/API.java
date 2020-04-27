@@ -139,7 +139,7 @@ public class API {
         Map<String, Object> responseMap = new HashMap<>();
         int appStatusCode = 0;
 
-        try (Socket s = new Socket("smsb222.cs.uky.edu", 8088)) {
+        try (Socket s = new Socket("localhost", 8088)) {
             appStatusCode = 1; // if app is online set status code to 1
         } catch (Exception e) {
             System.out.println(e);
@@ -225,7 +225,7 @@ public class API {
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
 
-        OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
+        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
@@ -297,7 +297,7 @@ public class API {
         String patientZipcode = "";
         Map<String,Object> responseMap = new HashMap<>();
 
-        OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
+        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
@@ -347,12 +347,13 @@ public class API {
         String hospitalZipCode = "";
         Map<String,Object> responseMap = new HashMap<>();
 
-        OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
+        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
-            OResultSet totalBeds = db.query("SELECT beds FROM Hospital WHERE id = " + id);
+            OResultSet totalBeds = db.query("SELECT totalBeds FROM Hospital WHERE id = " + id);
             OResultSet zipCode = db.query("SELECT zip FROM Hospital WHERE id =  " + id);
+            OResultSet avaialableBeds = db.query("SELECT availableBeds FROM Hospital WHERE id = " + id);
 
             if(totalBeds.hasNext()){
                 numTotalBeds = totalBeds.next().toString();
@@ -375,5 +376,17 @@ public class API {
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
+
+
+    public static void sendPatientToHospital(){
+
+
+    }
+
+    public static void updateNumAvailableBeds(){
+
+    }
+
+
 
 }

@@ -64,7 +64,7 @@ public class TopicConnector {
                     
                 List<Map<String, String>> incomingList = gson.fromJson(message, typeOf);
                  // connect database
-                 OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
+                 OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
 
                  // open database session
                  
