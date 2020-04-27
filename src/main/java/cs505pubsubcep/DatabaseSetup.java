@@ -23,7 +23,7 @@ public class DatabaseSetup {
 
     public static boolean reset_db(String name) {
         boolean wasSuccessful = false;
-        orientdb = new OrientDB("remote:localhost", "root", "rootpwd", OrientDBConfig.defaultConfig());
+        orientdb = new OrientDB("remote:smsb222.cs.uky.edu", "root", "rootpwd", OrientDBConfig.defaultConfig());
 
         // Remove Old Database
         if (orientdb.exists(name)) {
@@ -138,7 +138,7 @@ public class DatabaseSetup {
         int updatedBedCount = 0;
         String hospitalId = "";
 
-        OrientGraph graphDB = new OrientGraph("localhost:patient", login, password);
+        OrientGraph graphDB = new OrientGraph("smsb222.cs.uky.edu:patient", login, password);
         graphDB.command(
                 new OCommandSQL("UPDATE Hospital availableBeds = " + updatedBedCount + "WHERE id = " + hospitalId))
                 .execute();
@@ -173,7 +173,7 @@ public class DatabaseSetup {
     public static void createDB(String dbname) {
 
         // connect database
-        orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+        orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {

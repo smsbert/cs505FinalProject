@@ -5,7 +5,6 @@ import java.io.StringWriter;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -20,11 +19,7 @@ import com.google.gson.Gson;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.OrientDBConfig;
-import com.orientechnologies.orient.core.record.OElement;
-import com.orientechnologies.orient.core.sql.OCommandSQL;
-import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import cs505pubsubcep.DatabaseSetup;
 import cs505pubsubcep.Launcher;
@@ -230,7 +225,7 @@ public class API {
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
 
-        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+        OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
@@ -302,7 +297,7 @@ public class API {
         String patientZipcode = "";
         Map<String,Object> responseMap = new HashMap<>();
 
-        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+        OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
@@ -352,7 +347,7 @@ public class API {
         String hospitalZipCode = "";
         Map<String,Object> responseMap = new HashMap<>();
 
-        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+        OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
