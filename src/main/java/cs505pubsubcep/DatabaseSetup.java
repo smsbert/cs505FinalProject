@@ -197,6 +197,7 @@ public class DatabaseSetup {
         } catch (Exception e){
             System.out.println(e);
         }
+        
         orientdb.close();
     }
 }

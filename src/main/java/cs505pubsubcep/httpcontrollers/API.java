@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -18,6 +19,7 @@ import com.google.gson.Gson;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.OrientDBConfig;
+import com.orientechnologies.orient.core.record.OElement;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
@@ -43,14 +45,16 @@ public class API {
     }
 
     // check local
-    // curl --header "X-Auth-API-key:1234" "http://localhost:8082/api/checkmycep"
+    // curl --header "X-Auth-API-key:1234" "http://localhost:8088/api/checkmycep"
 
     // check remote
-    // curl --header "X-Auth-API-key:1234" "http://[linkblueid].cs.uky.edu:8082/api/checkmycep"
+    // curl --header "X-Auth-API-key:1234"
+    // "http://[linkblueid].cs.uky.edu:8082/api/checkmycep"
     // curl --header "X-Auth-API-key:1234" "http://localhost:8081/api/checkmycep"
 
     // check remote
-    // curl --header "X-Auth-API-key:1234" "http://[linkblueid].cs.uky.edu:8081/api/checkmycep"
+    // curl --header "X-Auth-API-key:1234"
+    // "http://[linkblueid].cs.uky.edu:8081/api/checkmycep"
 
     @GET
     @Path("/checkmycep")
@@ -160,6 +164,7 @@ public class API {
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
 
+        // TODO: error when api called from curl on vm
         // attempt to reset - returns true if successful
         wasReset = DatabaseSetup.reset_db(dbName);
         // update reset status if reset was successful
@@ -183,7 +188,8 @@ public class API {
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
 
-        //TODO: determine if zipcode is on alert based on this 15 and previous 15 second intervals of patient data
+        // TODO: determine if zipcode is on alert based on this 15 and previous 15
+        // second intervals of patient data
         alertZipList = zipList;
         responseMap.put("ziplist", zipList);
         responseString = gson.toJson(responseMap);
@@ -198,7 +204,8 @@ public class API {
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
 
-        if (alertZipList.length >= 5) { // TODO: determine state is in alert if at least five zipcodes in 15 seconds are in alert
+        if (alertZipList.length >= 5) { // TODO: determine state is in alert if at least five zipcodes in 15 seconds are
+                                        // in alert
             statusState = 1;
         }
 
@@ -211,56 +218,62 @@ public class API {
     @Path("/testcount")
     @Produces(MediaType.APPLICATION_JSON)
     public Response testCount(@HeaderParam("X-Auth-API-Key") String authKey) {
-        int numPositive = 0;
-        int numNegative = 0;
+        long numPositive = 0;
+        long numNegative = 0;
         String dbname = "patient";
         String login = "root";
         String password = "rootpwd";
-        int numCode1 = 0;
-        int numCode2 = 0;
-        int numCode4 = 0;
-        int numCode5= 0;
-        int numCode6 = 0;
+        long numCode1 = 0;
+        long numCode2 = 0;
+        long numCode4 = 0;
+        long numCode5 = 0;
+        long numCode6 = 0;
 
         String responseString = "{}";
-        Map<String,Object> responseMap = new HashMap<>();
+        Map<String, Object> responseMap = new HashMap<>();
 
         OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
-            OResultSet code1 = db.query("SELECT COUNT(*) FROM Patient WHERE statusCode = 1"); // tested negative
-            OResultSet code2 = db.query("SELECT COUNT(*) FROM Patient WHERE statusCode = 2"); // tested positive
-            OResultSet code4 = db.query("SELECT COUNT(*) FROM Patient WHERE statusCode = 4"); // tested negative
-            OResultSet code5 = db.query("SELECT COUNT(*) FROM Patient WHERE statusCode = 5"); // tested positive
-            OResultSet code6 = db.query("SELECT COUNT(*) FROM Patient WHERE statusCode = 6"); // tested positive
+            OResultSet code1 = db.query("SELECT * FROM Patient WHERE statusCode = 1"); // tested negative
+            OResultSet code2 = db.query("SELECT * FROM Patient WHERE statusCode = 2"); // tested positive
+            OResultSet code4 = db.query("SELECT * FROM Patient WHERE statusCode = 4"); // tested negative
+            OResultSet code5 = db.query("SELECT * FROM Patient WHERE statusCode = 5"); // tested positive
+            OResultSet code6 = db.query("SELECT * FROM Patient WHERE statusCode = 6"); // tested positive
+            responseMap.put("code1", String.valueOf(code1.stream().count()));
+            responseMap.put("code2", String.valueOf(code2.stream().count()));
+            responseMap.put("code4", String.valueOf(code4.stream().count()));
+            responseMap.put("code5", String.valueOf(code5.stream().count()));
+            responseMap.put("code6", String.valueOf(code6.stream().count()));
+            
+            responseMap.put("positive_test", String.valueOf(Long.sum(Long.sum(code6.stream().count(), code5.stream().count()), code2.stream().count())));
+            responseMap.put("negative_test", String.valueOf(code1.stream().count() + code4.stream().count()));
+            
 
-            if(code1.hasNext()){
-                numCode1 = Integer.parseInt(code1.next().toString());
-            }
-            if(code2.hasNext()){
-                numCode2 = Integer.parseInt(code2.next().toString());
-            }
-            if(code4.hasNext()){
-                numCode4 = Integer.parseInt(code4.next().toString());
-            }
-            if(code5.hasNext()){
-                numCode5 = Integer.parseInt(code5.next().toString());
-            }
-            if(code6.hasNext()){
-                numCode6 = Integer.parseInt(code6.next().toString());
-            }
+            numCode1 = code1.stream().count();
+            numCode2 = code2.stream().count();
+            numCode4 = code4.stream().count();
+            numCode5 = code5.stream().count();
+            numCode6 = code6.stream().count();
+            String x = String.valueOf(code1.stream().count());
 
-            numPositive = numCode2 + numCode5 + numCode6;
-            numNegative = numCode1 + numCode4;
+            // responseMap.put("num1", x);
+            // responseMap.put("num2", String.valueOf(code2.stream().count()));
+            // responseMap.put("num4", String.valueOf(code4.stream().count()));
+            // responseMap.put("num5", String.valueOf(code5.stream().count()));
+            // responseMap.put("num6", String.valueOf(code6.stream().count()));
+            
+            // numPositive = numCode2 + numCode5 + numCode6;
+            // numNegative = numCode1 + numCode4;
         }
         catch (Exception e){
             System.out.println(e);
         }
 
         orientdb.close();
-        responseMap.put("positive_test", String.valueOf(numPositive));
-        responseMap.put("negative_test", String.valueOf(numNegative));
+        // responseMap.put("positive_test", String.valueOf(numPositive));
+        // responseMap.put("negative_test", String.valueOf(numNegative));
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
