@@ -166,7 +166,7 @@ public class API {
 
         // TODO: error when api called from curl on vm
         // attempt to reset - returns true if successful
-        wasReset = DatabaseSetup.reset_db(dbName);
+        //wasReset = DatabaseSetup.reset_db(dbName);
         // update reset status if reset was successful
         if (wasReset == true) {
             resetStatusCode = 1;

@@ -2,13 +2,19 @@ package cs505pubsubcep;
 
 import java.io.IOException;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.HashMap;
+
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.ODatabaseType;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.OrientDBConfig;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.core.record.OVertex;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 // docker run -d --name orientdb -p 2424:2424 -p 2480:2480 -e ORIENTDB_ROOT_PASSWORD=rootpwd orientdb:2.2
@@ -52,37 +58,6 @@ public class DatabaseSetup {
         }
     }
 
-    // public void printJSONDB(String filepath){
-
-    // BufferedReader reader = new BufferedReader(new FileReader (filepath));
-    // JSONArray data = json.load(reader);
-    // with open(filepath) as f {
-    // data = json.load(f);
-    // }
-
-    // for (Object key : data) {
-
-    // String name = data.get(key).get("name");
-    // String wikiUrl = data.get(key).get("wikiUrl");
-    // String wikiImage = data.get(key).get("wikiImage");
-    // String degreeLists = data.get(key).get("degreeLists");
-
-    // System.out.print("json key:\t\t" + key);
-    // System.out.print("name:\t\t\t" + name);
-
-    // // Most people are on Wikipedia, but not everyone
-    // if (wikiUrl == null) {
-    // System.out.print("wikiUrl:\t\t" + wikiUrl);
-    // }
-    // if (wikiImage == null) {
-    // System.out.print("wikiImage:\t\t" + wikiImage);
-    // }
-
-    // System.out.print(degreeLists);
-    // System.out.print("");
-    // }
-    // }
-
     public static OClass createHospitalClass(ODatabaseSession db, OClass hospital) {
         hospital = db.createVertexClass("Hospital");
         hospital.createProperty("id", OType.STRING);
@@ -90,17 +65,72 @@ public class DatabaseSetup {
         hospital.createProperty("address", OType.STRING);
         hospital.createProperty("city", OType.STRING);
         hospital.createProperty("type", OType.STRING);
-        hospital.createProperty("beds", OType.INTEGER);
+        hospital.createProperty("beds", OType.STRING);
         hospital.createProperty("county", OType.STRING);
         hospital.createProperty("country", OType.STRING);
-        hospital.createProperty("lattitude", OType.FLOAT);
-        hospital.createProperty("longitude", OType.FLOAT);
+        hospital.createProperty("lattitude", OType.STRING);
+        hospital.createProperty("longitude", OType.STRING);
         hospital.createProperty("naics", OType.STRING);
         hospital.createProperty("website", OType.STRING);
         hospital.createProperty("owner", OType.STRING);
         hospital.createProperty("trauma", OType.STRING);
-        hospital.createProperty("heipad", OType.BOOLEAN);
-        return hospital;
+        hospital.createProperty("heipad", OType.STRING);
+        
+	//bring in the csv
+        try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/cs505pubsubcep/hospitals.csv"))) {
+            int i=0;
+            for (String line; (line = br.readLine()) !=null ; ) {
+                //disregardes the first line
+                if (i==0)
+                {
+                    i++;
+                }
+                else
+                {
+                    String[] vertices = line.split(",");
+
+                    String id = vertices[0];
+                    String name = vertices[1];
+                    String address = vertices[2];
+                    String city = vertices[3];
+                    String type = vertices[4];
+                    String beds = vertices[5];
+                    String county = vertices[6];
+                    String country = vertices[7];
+                    String latitude = vertices[8];
+                    String longitude = vertices[9];
+                    String naics = vertices[10];
+                    String website = vertices[11];
+                    String owner = vertices[12];
+                    String trauma = vertices[13];
+                    String heipad = vertices[14];
+                    OVertex hospitalVertex = db.newVertex("Hospital");
+
+                    hospitalVertex.setProperty("id", id);
+                    hospitalVertex.setProperty("name", name);
+                    hospitalVertex.setProperty("address", address);
+                    hospitalVertex.setProperty("city", city);
+                    hospitalVertex.setProperty("type", type);
+                    hospitalVertex.setProperty("beds", beds);
+                    hospitalVertex.setProperty("county", county);
+                    hospitalVertex.setProperty("country", country);
+                    hospitalVertex.setProperty("latitude", latitude);
+                    hospitalVertex.setProperty("longitude", longitude);
+                    hospitalVertex.setProperty("naics", naics);
+                    hospitalVertex.setProperty("website", website);
+                    hospitalVertex.setProperty("owner", owner);
+                    hospitalVertex.setProperty("trauma", trauma);
+                    hospitalVertex.setProperty("heipad", heipad);
+                    
+		    hospitalVertex.save();
+		}
+	}
+	}
+	catch (IOException e) {
+        	e.printStackTrace();
+    }
+	
+	return hospital;
     }
 
     public static OClass createKYZipDetailsClass(ODatabaseSession db, OClass zipDetails) {
@@ -110,7 +140,42 @@ public class DatabaseSetup {
         zipDetails.createProperty("city", OType.STRING);
         zipDetails.createProperty("state", OType.STRING);
         zipDetails.createProperty("countyName", OType.STRING);
-        return zipDetails;
+        
+	//bring in the csv
+        try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/cs505pubsubcep/kyzipdetails.csv"))) {
+            int i=0;
+            for (String line; (line = br.readLine()) !=null ; ) {
+                //disregardes the first line
+                if (i==0)
+                {
+                    i++;
+                }
+                else
+                {
+                    String[] vertices = line.split(",");
+
+                    String zip = vertices[0];
+                    String zipcodeName = vertices[1];
+                    String city = vertices[2];
+                    String state = vertices[3];
+                    String countyName = vertices[4];
+                    
+		    OVertex zipDetailsVertex = db.newVertex("ZipDetails");
+
+                    zipDetailsVertex.setProperty("zip", zip);
+                    zipDetailsVertex.setProperty("zipcodeName", zipcodeName);
+                    zipDetailsVertex.setProperty("city", city);
+                    zipDetailsVertex.setProperty("state", state);
+                    zipDetailsVertex.setProperty("countyName", countyName);
+
+		    zipDetailsVertex.save();
+                }
+        }
+        }
+        catch (IOException e) {
+                e.printStackTrace();
+    }	
+	return zipDetails;
 
     }
 
@@ -118,8 +183,39 @@ public class DatabaseSetup {
         zipDistance = db.createVertexClass("ZipDistance");
         zipDistance.createProperty("zipFrom", OType.STRING);
         zipDistance.createProperty("zipTo", OType.STRING);
-        zipDistance.createProperty("distance", OType.FLOAT);
-        return zipDistance;
+        zipDistance.createProperty("distance", OType.STRING);
+        
+	//bring in the csv
+        try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/cs505pubsubcep/kyzipdistance.csv"))) {
+            int i=0;
+            for (String line; (line = br.readLine()) !=null ; ) {
+                //disregardes the first line
+                if (i==0)
+                {
+                    i++;
+                }
+                else
+                {
+                    String[] vertices = line.split(",");
+
+                    String zipFrom = vertices[0];
+                    String zipTo = vertices[1];
+                    String distance = vertices[2];
+                    
+                    OVertex zipDistanceVertex = db.newVertex("ZipDistance");
+
+                    zipDistanceVertex.setProperty("zipFrom", zipFrom);
+                    zipDistanceVertex.setProperty("zipTo", zipTo);
+                    zipDistanceVertex.setProperty("distance", distance);
+
+                    zipDistanceVertex.save();
+                }
+        }
+        }
+        catch (IOException e) {
+                e.printStackTrace();
+    }	
+	return zipDistance;
     }
 
     public static OClass createPatientClass(ODatabaseSession db, OClass patient) {
@@ -144,32 +240,6 @@ public class DatabaseSetup {
                 .execute();
     }
 
-    public void addPatientsToDB(String filepath) {
-        // // go thourhg file and add each patient to database
-        // String dbname = "patient";
-        // String login = "root";
-        // String password = "rootpwd";
-        // OrientGraph graphDB = new OrientGraph("localhost:patient", login, password);
-        // // open and parse local json file
-        // with open(filepath) as f {
-        // data = json.load(f);
-        // }
-        // // loop through each key in the json and create a new patient with the info
-        // in the database
-        // for (Object key : data) {
-        // String firstName = data.get(key).get("first_name");
-        // String lastName = data.get(key).get("last_name");
-        // String mrn = data.get(key).get("mrn");
-        // String zipcode = str(data.get(key).get("zip_code"));
-        // String statusCode = str(data.get(key).get("patient_status_code"));
-
-        // graphDB.command(new OCommandSQL("CREATE VERTEX Person SET firstName = '" +
-        // firstName + "', lastName = '" + lastName
-        // + "', mrn = '" + mrn + "', zipcode = '" + zipcode + "', statusCode = '" +
-        // statusCode + "'")).execute();
-        // }
-    }
-
     public static void createDB(String dbname) {
 
         // connect database
@@ -182,7 +252,10 @@ public class DatabaseSetup {
             OClass zipDetails = db.getClass("ZipDetails");
             OClass zipDistance = db.getClass("ZipDistance");
             OClass patient = db.getClass("Patient");
-            if(hospital == null){
+            if(patient == null){
+                patient = createPatientClass(db, patient);
+            }
+	    if(hospital == null){
                 hospital = createHospitalClass(db, hospital);
             }
             if(zipDetails == null){
@@ -190,9 +263,6 @@ public class DatabaseSetup {
             }
             if(zipDistance == null){
                 zipDistance = createKYZipDistanceClass(db, zipDistance);
-            }
-            if(patient == null){
-                patient = createPatientClass(db, patient);
             }
         } catch (Exception e){
             System.out.println(e);
