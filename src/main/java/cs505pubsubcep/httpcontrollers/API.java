@@ -2,6 +2,7 @@ package cs505pubsubcep.httpcontrollers;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -48,8 +49,7 @@ public class API {
     // curl --header "X-Auth-API-key:1234" "http://localhost:8088/api/checkmycep"
 
     // check remote
-    // curl --header "X-Auth-API-key:1234"
-    // "http://[linkblueid].cs.uky.edu:8082/api/checkmycep"
+    // curl --header "X-Auth-API-key:1234" "http://[linkblueid].cs.uky.edu:8082/api/checkmycep"
     // curl --header "X-Auth-API-key:1234" "http://localhost:8081/api/checkmycep"
 
     // check remote
@@ -141,11 +141,13 @@ public class API {
         String[] teamMemberSids = { "12145986", "12062818" };
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
-
         int appStatusCode = 0;
-        // if(){ // if app is online
-        // appStatusCode = 1; // TODO: check if app is online
-        // }
+
+        try (Socket s = new Socket("smsb222.cs.uky.edu", 8088)) {
+            appStatusCode = 1; // if app is online set status code to 1
+        } catch (Exception e) {
+            System.out.println(e);
+        }
 
         responseMap.put("team_name", teamName);
         responseMap.put("Team_members_sids", teamMemberSids);
@@ -256,6 +258,7 @@ public class API {
             numCode4 = code4.stream().count();
             numCode5 = code5.stream().count();
             numCode6 = code6.stream().count();
+            System.out.println("Numbers = " + numCode1 + ", " + numCode2 + ", " + numCode4 + ", " + numCode5 + ", " + numCode6);
             String x = String.valueOf(code1.stream().count());
 
             // responseMap.put("num1", x);
@@ -264,8 +267,10 @@ public class API {
             // responseMap.put("num5", String.valueOf(code5.stream().count()));
             // responseMap.put("num6", String.valueOf(code6.stream().count()));
             
-            // numPositive = numCode2 + numCode5 + numCode6;
-            // numNegative = numCode1 + numCode4;
+            numPositive = numCode2 + numCode5 + numCode6;
+            numNegative = numCode1 + numCode4;
+            System.out.println("NumPos = " + numPositive);
+            System.out.println("NumNeg = " + numNegative);
         }
         catch (Exception e){
             System.out.println(e);
