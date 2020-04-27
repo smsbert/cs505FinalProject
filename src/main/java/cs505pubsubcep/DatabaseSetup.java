@@ -182,6 +182,9 @@ public class DatabaseSetup {
             OClass zipDetails = db.getClass("ZipDetails");
             OClass zipDistance = db.getClass("ZipDistance");
             OClass patient = db.getClass("Patient");
+            if(patient == null){
+                patient = createPatientClass(db, patient);
+            }
             if(hospital == null){
                 hospital = createHospitalClass(db, hospital);
             }
@@ -190,9 +193,6 @@ public class DatabaseSetup {
             }
             if(zipDistance == null){
                 zipDistance = createKYZipDistanceClass(db, zipDistance);
-            }
-            if(patient == null){
-                patient = createPatientClass(db, patient);
             }
         } catch (Exception e){
             System.out.println(e);
