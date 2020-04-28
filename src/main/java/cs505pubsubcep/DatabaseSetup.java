@@ -27,7 +27,7 @@ public class DatabaseSetup {
 
     public static boolean reset_db(String name) {
         boolean wasSuccessful = false;
-        orientdb = new OrientDB("remote:localhost", "root", "rootpwd", OrientDBConfig.defaultConfig());
+        orientdb = new OrientDB("remote:smsb222.cs.uky.edu", "root", "rootpwd", OrientDBConfig.defaultConfig());
 
         // Remove Old Database
         if (orientdb.exists(name)) {
@@ -75,7 +75,7 @@ public class DatabaseSetup {
         hospital.createProperty("website", OType.STRING);
         hospital.createProperty("owner", OType.STRING);
         hospital.createProperty("trauma", OType.STRING);
-        hospital.createProperty("heipad", OType.STRING);
+        hospital.createProperty("helipad", OType.STRING);
 
         // bring in the csv
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/cs505pubsubcep/hospitals.csv"))) {
@@ -125,7 +125,7 @@ public class DatabaseSetup {
                     hospitalVertex.setProperty("website", website);
                     hospitalVertex.setProperty("owner", owner);
                     hospitalVertex.setProperty("trauma", trauma);
-                    hospitalVertex.setProperty("heipad", heipad);
+                    hospitalVertex.setProperty("helipad", heipad);
 
                     hospitalVertex.save();
                 }
@@ -156,10 +156,10 @@ public class DatabaseSetup {
                     String[] vertices = line.split(",");
 
                     String zip = vertices[0];
-                    String zipcodeName = vertices[1];
-                    String city = vertices[2];
-                    String state = vertices[3];
-                    String countyName = vertices[4];
+                    String zipcodeName = vertices[1] + vertices[2];
+                    String city = vertices[3];
+                    String state = vertices[4];
+                    String countyName = vertices[5];
 
                     OVertex zipDetailsVertex = db.newVertex("ZipDetails");
 
@@ -222,6 +222,7 @@ public class DatabaseSetup {
         patient.createProperty("zipcode", OType.STRING);
         patient.createProperty("statusCode", OType.STRING);
         patient.createProperty("dateTime", OType.DATETIME);
+        patient.createProperty("hospitalId", OType.STRING);
         return patient;
     }
 
@@ -230,7 +231,7 @@ public class DatabaseSetup {
         int updatedBedCount = 0;
         String hospitalId = "";
 
-        OrientGraph graphDB = new OrientGraph("localhost:patient", login, password);
+        OrientGraph graphDB = new OrientGraph("smsb222.cs.uky.edu:patient", login, password);
         graphDB.command(
                 new OCommandSQL("UPDATE Hospital availableBeds = " + updatedBedCount + "WHERE id = " + hospitalId))
                 .execute();
@@ -239,7 +240,7 @@ public class DatabaseSetup {
     public static void createDB(String dbname) {
 
         // connect database
-        orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+        orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
