@@ -5,6 +5,12 @@ import java.io.StringWriter;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.*;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -20,6 +26,7 @@ import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.OrientDBConfig;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
+import com.orientechnologies.orient.core.sql.executor.OResult;
 
 import cs505pubsubcep.DatabaseSetup;
 import cs505pubsubcep.Launcher;
@@ -181,24 +188,85 @@ public class API {
     @Path("/zipalertlist")
     @Produces(MediaType.APPLICATION_JSON)
     public Response zipAlertList(@HeaderParam("X-Auth-API-Key") String alertStatus) {
-        String[] zipList = {};
-        // boolean alertState = false; // growth of 2X over a 15 second time interval then true
+        ArrayList<String> zipList = new ArrayList<String>();
+        boolean alertState = false; // growth of 2X over a 15 second time interval then true
         String responseString = "{}";
+	String dbname = "patient";
+        String login = "root";
+        String password = "rootpwd";
+	
         Map<String, Object> responseMap = new HashMap<>();
 
         // TODO: determine if zipcode is on alert based on this 15 and previous 15
         // second intervals of patient data
         // alertZipList = zipList;
 
-        String startTime = "00";
-        String endTime = "15";
+        //current time
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Calendar cal1 = Calendar.getInstance();
+        cal1.getTime();
+	
+	Calendar cal2 = (Calendar) cal1.clone();
+        Calendar cal3 = (Calendar) cal2.clone();
+	cal2.add(Calendar.SECOND, -15);
+        cal3.add(Calendar.SECOND, -30);
+	String time1 = dateFormat.format(cal1.getTime());
+        String time2 = dateFormat.format(cal2.getTime());
+        String time3 = dateFormat.format(cal3.getTime());
 
+        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+
+        // open database session
+        try (ODatabaseSession db = orientdb.open(dbname, login, password);) 
+	{
+		OResultSet first15sec = db.query("select count(dateTime) as patientCount, zipcode from Patient where dateTime < '?' and dateTime > '?' and statusCode != 0 and statusCode != 1 and statusCode != 3 and statusCode != 4 group by zipcode", time3, time2);
+		OResultSet second15sec = db.query("select count(dateTime) as patientCount, zipcode from Patient where dateTime < '?' and dateTime > '?' and statusCode != 0 and statusCode != 1 and statusCode != 3 and statusCode != 4 group by zipcode", time2, time1);
+		
+		String zipcode1;
+		String zipcode2;
+		int patientCount1;
+		int patientCount2;
+
+		while (first15sec.hasNext())
+		{
+			OResult item = first15sec.next();
+			zipcode1 = item.getProperty("zipcode");
+			patientCount1 = item.getProperty("patientCount");
+			while (second15sec.hasNext())
+			{
+				OResult item2 = second15sec.next();
+                        	zipcode2 = item2.getProperty("zipcode");
+                        	patientCount2 = item2.getProperty("patientCount");
+				if (zipcode1 == zipcode2 && (patientCount2 >= patientCount1*2))
+				{
+					zipList.add(zipcode1);
+				}
+			}
+		}
+
+	}
+        catch (Exception e)
+	{
+            System.out.println(e);
+        }
+        orientdb.close();
+	
         responseMap.put("ziplist", zipList);
-        responseMap.put("startTime", startTime);
-        responseMap.put("endTime", endTime);
         responseString = gson.toJson(responseMap);
-        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
-    }
+        
+/*
+	catch(Exception ex){
+		StringWriter sw = new StringWriter();
+		ex.printStackTrace(new PrintWriter(sw));
+		String exceptionAsString = sw.toString();
+		ex.printStackTrace();
+
+		return Response.status(500).entity(exceptionAsString).build();
+
+	}*/
+	return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
+
+      }
 
     @GET
     @Path("/alertlist")
