@@ -3,6 +3,10 @@ package cs505pubsubcep.httpcontrollers;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -180,25 +184,82 @@ public class API {
     @GET
     @Path("/zipalertlist")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response zipAlertList(@HeaderParam("X-Auth-API-Key") String alertStatus) {
-        String[] zipList = {};
-        // boolean alertState = false; // growth of 2X over a 15 second time interval
-        // then true
+    public Response zipAlertList(@HeaderParam("X-Auth-API-Key") String authKey) {
+        // ArrayList<String> zipList = new ArrayList<String>();
+        // boolean alertState = false; // growth of 2X over a 15 second time interval then true
         String responseString = "{}";
+        // String dbname = "patient";
+        // String login = "root";
+        // String password = "rootpwd";y
+
         Map<String, Object> responseMap = new HashMap<>();
 
-        // TODO: determine if zipcode is on alert based on this 15 and previous 15
-        // second intervals of patient data
-        // alertZipList = zipList;
+        // // TODO: determine if zipcode is on alert based on this 15 and previous 15
+        // // second intervals of patient data
+        // // alertZipList = zipList;
 
-        String startTime = "00";
-        String endTime = "15";
+        // // current time
+        // DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        // Calendar cal1 = Calendar.getInstance();
+        // cal1.getTime();
 
-        responseMap.put("ziplist", zipList);
-        responseMap.put("startTime", startTime);
-        responseMap.put("endTime", endTime);
-        responseString = gson.toJson(responseMap);
+        // Calendar cal2 = (Calendar) cal1.clone();
+        // Calendar cal3 = (Calendar) cal2.clone();
+        // cal2.add(Calendar.SECOND, -15);
+        // cal3.add(Calendar.SECOND, -30);
+        // String time1 = dateFormat.format(cal1.getTime());
+        // String time2 = dateFormat.format(cal2.getTime());
+        // String time3 = dateFormat.format(cal3.getTime());
+
+        // OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+
+        // // open database session
+        // try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
+        //     OResultSet first15sec = db.query(
+        //             "select count(dateTime) as patientCount, zipcode from Patient where dateTime < '?' and dateTime > '?' and statusCode != 0 and statusCode != 1 and statusCode != 3 and statusCode != 4 group by zipcode",
+        //             time3, time2);
+        //     OResultSet second15sec = db.query(
+        //             "select count(dateTime) as patientCount, zipcode from Patient where dateTime < '?' and dateTime > '?' and statusCode != 0 and statusCode != 1 and statusCode != 3 and statusCode != 4 group by zipcode",
+        //             time2, time1);
+
+        //     String zipcode1;
+        //     String zipcode2;
+        //     int patientCount1;
+        //     int patientCount2;
+
+        //     while (first15sec.hasNext()) {
+        //         OResult item = first15sec.next();
+        //         zipcode1 = item.getProperty("zipcode");
+        //         patientCount1 = item.getProperty("patientCount");
+        //         while (second15sec.hasNext()) {
+        //             OResult item2 = second15sec.next();
+        //             zipcode2 = item2.getProperty("zipcode");
+        //             patientCount2 = item2.getProperty("patientCount");
+        //             if (zipcode1 == zipcode2 && (patientCount2 >= patientCount1 * 2)) {
+        //                 zipList.add(zipcode1);
+        //             }
+        //         }
+        //     }
+
+        // } catch (Exception e) {
+        //     System.out.println(e);
+        // }
+        // orientdb.close();
+
+        // responseMap.put("ziplist", zipList);
+        // responseString = gson.toJson(responseMap);
+
+        /*
+         * catch(Exception ex){ StringWriter sw = new StringWriter();
+         * ex.printStackTrace(new PrintWriter(sw)); String exceptionAsString =
+         * sw.toString(); ex.printStackTrace();
+         * 
+         * return Response.status(500).entity(exceptionAsString).build();
+         * 
+         * }
+         */
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
+
     }
 
     @GET
@@ -337,26 +398,25 @@ public class API {
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
-            OResultSet totalBeds = db.query("SELECT totalBeds FROM Hospital WHERE id = ?",  id);
-            OResultSet zipCode = db.query("SELECT zip FROM Hospital WHERE id =  ?",  id);
+            OResultSet totalBeds = db.query("SELECT totalBeds FROM Hospital WHERE id = ?", id);
+            OResultSet zipCode = db.query("SELECT zip FROM Hospital WHERE id =  ?", id);
 
             if (totalBeds.hasNext()) {
                 OResult row = totalBeds.next();
                 numTotalBeds = Integer.parseInt(row.getProperty("totalBeds"));
             }
-            if(zipCode.hasNext()){
+            if (zipCode.hasNext()) {
                 OResult row2 = zipCode.next();
                 hospitalZipCode = row2.getProperty("zip");
             }
 
             OResultSet patientsAtHospital = db.query("SELECT * FROM Patient WHERE hospitalId = ?", id);
-            while(patientsAtHospital.hasNext()){
+            while (patientsAtHospital.hasNext()) {
                 OResult row3 = patientsAtHospital.next();
                 numBedsTaken = numBedsTaken + 1;
             }
 
             availableBeds = numTotalBeds - numBedsTaken;
-
 
             responseMap.put("total_beds", String.valueOf(numTotalBeds));
             responseMap.put("avalable_beds", String.valueOf(availableBeds));
