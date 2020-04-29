@@ -30,7 +30,7 @@ public class Launcher {
         String dbName = "patient";
         // boolean wasReset = DatabaseSetup.reset_db(dbName);
         // if(wasReset == true){
-            // DatabaseSetup.createDB(dbName);
+        //     DatabaseSetup.createDB(dbName);
         // }
 
         System.out.println("Starting CEP...");

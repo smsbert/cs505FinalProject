@@ -20,14 +20,12 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 public class DatabaseSetup {
 
     private static OrientDB orientdb;
-    private static OrientGraph graphDB;
-    private ODatabaseSession dbSession;
     private static String login = "root";
     private static String password = "rootpwd";
 
     public static boolean reset_db(String name) {
         boolean wasSuccessful = false;
-        orientdb = new OrientDB("remote:smsb222.cs.uky.edu", "root", "rootpwd", OrientDBConfig.defaultConfig());
+        orientdb = new OrientDB("remote:localhost", "root", "rootpwd", OrientDBConfig.defaultConfig());
 
         // Remove Old Database
         if (orientdb.exists(name)) {
@@ -144,6 +142,9 @@ public class DatabaseSetup {
         zipDetails.createProperty("city", OType.STRING);
         zipDetails.createProperty("state", OType.STRING);
         zipDetails.createProperty("countyName", OType.STRING);
+        zipDetails.createProperty("numPatients", OType.STRING);
+        zipDetails.createProperty("patients", OType.STRING);
+        zipDetails.createProperty("onAlert", OType.STRING);
 
         // bring in the csv
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/cs505pubsubcep/kyzipdetails.csv"))) {
@@ -160,6 +161,8 @@ public class DatabaseSetup {
                     String city = vertices[3];
                     String state = vertices[4];
                     String countyName = vertices[5];
+                    String numPatients= "0";
+                    String onAlert= "N";
 
                     OVertex zipDetailsVertex = db.newVertex("ZipDetails");
 
@@ -168,6 +171,9 @@ public class DatabaseSetup {
                     zipDetailsVertex.setProperty("city", city);
                     zipDetailsVertex.setProperty("state", state);
                     zipDetailsVertex.setProperty("countyName", countyName);
+                    zipDetailsVertex.setProperty("numPatients", numPatients);
+                    zipDetailsVertex.setProperty("patients", numPatients);
+                    zipDetailsVertex.setProperty("onAlert", onAlert);
 
                     zipDetailsVertex.save();
                 }
@@ -222,7 +228,9 @@ public class DatabaseSetup {
         patient.createProperty("zipcode", OType.STRING);
         patient.createProperty("statusCode", OType.STRING);
         patient.createProperty("dateTime", OType.DATETIME);
+        patient.createProperty("timeInterval", OType.STRING);
         patient.createProperty("hospitalId", OType.STRING);
+        patient.createProperty("stateAlert", OType.STRING);
         return patient;
     }
 
@@ -231,7 +239,7 @@ public class DatabaseSetup {
         int updatedBedCount = 0;
         String hospitalId = "";
 
-        OrientGraph graphDB = new OrientGraph("smsb222.cs.uky.edu:patient", login, password);
+        OrientGraph graphDB = new OrientGraph("localhost:patient", login, password);
         graphDB.command(
                 new OCommandSQL("UPDATE Hospital availableBeds = " + updatedBedCount + "WHERE id = " + hospitalId))
                 .execute();
@@ -240,7 +248,7 @@ public class DatabaseSetup {
     public static void createDB(String dbname) {
 
         // connect database
-        orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
+        orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
