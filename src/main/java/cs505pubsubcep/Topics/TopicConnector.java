@@ -29,6 +29,10 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Stream;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.File;
 
 public class TopicConnector {
 
@@ -87,12 +91,22 @@ public class TopicConnector {
                 // ODatabasePool pool = new ODatabasePool(orientdb, "patient", "root",
                 // "rootpwd", poolCfg.build());
 
-                // open database session
-
+		File file = new File("src/main/java/cs505pubsubcep/patients.csv");
+            	file.createNewFile();
+		//open database session
                 try (ODatabaseSession db = orientdb.open("patient", "root", "rootpwd");) {
                     for (Map<String, String> map : incomingList) {
                         System.out.println("INPUT CEP EVENT: " + map);
-                        String firstName = map.get("first_name");
+                        
+			BufferedWriter patientWriter = new BufferedWriter(
+                                new FileWriter("src/main/java/cs505pubsubcep/patients.csv", true)  //Set true for append mode
+                            );
+                        String mapString = map.toString();
+                        patientWriter.newLine();   //Add new line
+                        patientWriter.write(mapString);
+                        patientWriter.close();
+			
+			String firstName = map.get("first_name");
                         String lastName = map.get("last_name");
                         String mrn = map.get("mrn");
                         String zipcode = map.get("zip_code");
