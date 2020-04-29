@@ -1,7 +1,7 @@
 package cs505pubsubcep;
 
 import java.io.IOException;
-
+import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
@@ -13,7 +13,12 @@ import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.OVertex;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
+import com.orientechnologies.orient.core.sql.executor.OResult;
+import com.orientechnologies.orient.core.sql.executor.OResultSet;
+import com.orientechnologies.orient.core.sql.operator.OQueryOperator.ORDER;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
+
+import org.jvnet.hk2.internal.SystemDescriptor;
 
 // docker run -d --name orientdb -p 2424:2424 -p 2480:2480 -e ORIENTDB_ROOT_PASSWORD=rootpwd orientdb:2.2
 
@@ -161,8 +166,8 @@ public class DatabaseSetup {
                     String city = vertices[3];
                     String state = vertices[4];
                     String countyName = vertices[5];
-                    String numPatients= "0";
-                    String onAlert= "N";
+                    String numPatients = "0";
+                    String onAlert = "N";
 
                     OVertex zipDetailsVertex = db.newVertex("ZipDetails");
 
@@ -227,13 +232,36 @@ public class DatabaseSetup {
         patient.createProperty("mrn", OType.STRING);
         patient.createProperty("zipcode", OType.STRING);
         patient.createProperty("statusCode", OType.STRING);
-        patient.createProperty("dateTime", OType.DATETIME);
         patient.createProperty("timeInterval", OType.STRING);
         patient.createProperty("hospitalId", OType.STRING);
         patient.createProperty("stateAlert", OType.STRING);
         return patient;
     }
 
+    public static OClass createZipClass(ODatabaseSession db, OClass zipClass) {
+        zipClass = db.createVertexClass("Zip");
+        zipClass.createProperty("zipcode", OType.STRING);
+        zipClass.createProperty("statusCode", OType.STRING);
+        zipClass.createProperty("timeInterval", OType.STRING);
+        return zipClass;
+    }
+
+    public static OClass createNumPatientsClass(ODatabaseSession db, OClass numPatients) {
+        numPatients = db.createVertexClass("NumPatients");
+        numPatients.createProperty("zipcode", OType.STRING);
+        numPatients.createProperty("numPatients", OType.STRING);
+        numPatients.createProperty("timeInterval", OType.STRING);
+        numPatients.createProperty("alertStatus", OType.STRING);
+        return numPatients;
+    }
+
+    public static OClass createStateAlertClass(ODatabaseSession db, OClass stateAlert) {
+        stateAlert = db.createVertexClass("StateAlert");
+        stateAlert.createProperty("onAlert", OType.STRING);
+        OVertex stateAlerrtVertex = db.newVertex("StateAlert");
+        stateAlerrtVertex.setProperty("onAlert", "N");
+        return stateAlert;
+    }
     public void updateHospitalDB(String filepath) {
         String dbname = "patient";
         int updatedBedCount = 0;
@@ -275,4 +303,37 @@ public class DatabaseSetup {
 
         orientdb.close();
     }
+
+    public static void resetZipDB(String name) {
+        orientdb = new OrientDB("remote:localhost", "root", "rootpwd", OrientDBConfig.defaultConfig());
+        // Remove Old Database
+        if (orientdb.exists(name)) {
+            orientdb.drop(name);
+        }
+
+        orientdb.create(name, ODatabaseType.PLOCAL);
+        orientdb.close();
+    }
+
+    public static void createZipDB(String name) {
+        orientdb = new OrientDB("remote:localhost", "root", "rootpwd", OrientDBConfig.defaultConfig());
+        try (ODatabaseSession db = orientdb.open(name, login, password);) {
+            OClass zipClass = db.getClass("Zip");
+            OClass numPatients = db.getClass("NumPatients");
+            OClass stateAlert = db.getClass("StateAlert");
+            if (zipClass == null) {
+                zipClass = createZipClass(db, zipClass);
+            }
+            if (numPatients == null) {
+                numPatients = createNumPatientsClass(db, numPatients);
+            }
+            if (stateAlert == null) {
+                stateAlert = createStateAlertClass(db, stateAlert);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        orientdb.close();
+    }
+
 }

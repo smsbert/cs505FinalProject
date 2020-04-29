@@ -1,13 +1,23 @@
 package cs505pubsubcep.Topics;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.orientechnologies.orient.core.config.OGlobalConfiguration;
-import com.orientechnologies.orient.core.db.ODatabasePool;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.OrientDBConfig;
-import com.orientechnologies.orient.core.db.OrientDBConfigBuilder;
 import com.orientechnologies.orient.core.record.OVertex;
 import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
@@ -16,23 +26,8 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
-import org.antlr.v4.runtime.atn.SemanticContext.OR;
-
+import cs505pubsubcep.DatabaseSetup;
 import cs505pubsubcep.Launcher;
-
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.stream.Stream;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.File;
 
 public class TopicConnector {
 
@@ -53,10 +48,6 @@ public class TopicConnector {
 
         try {
 
-            // String hostname = "";
-            // String username = "";
-            // String password = "";
-            // String virtualhost = "";
             String username = "student";
             String password = "student01";
             String hostname = "128.163.202.61";
@@ -85,92 +76,21 @@ public class TopicConnector {
                 List<Map<String, String>> incomingList = gson.fromJson(message, typeOf);
                 // connect database
                 OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
-                // OrientDBConfigBuilder poolCfg = OrientDBConfig.builder();
-                // poolCfg.addConfig(OGlobalConfiguration.DB_POOL_MIN, 1);
-                // poolCfg.addConfig(OGlobalConfiguration.DB_POOL_MAX, 10);
-                // ODatabasePool pool = new ODatabasePool(orientdb, "patient", "root",
-                // "rootpwd", poolCfg.build());
 
-		File file = new File("src/main/java/cs505pubsubcep/patients.csv");
-            	file.createNewFile();
-		//open database session
+                File file = new File("src/main/java/cs505pubsubcep/patients.csv");
+                file.createNewFile();
+                // open database session
                 try (ODatabaseSession db = orientdb.open("patient", "root", "rootpwd");) {
                     for (Map<String, String> map : incomingList) {
                         System.out.println("INPUT CEP EVENT: " + map);
-                        
-			BufferedWriter patientWriter = new BufferedWriter(
-                                new FileWriter("src/main/java/cs505pubsubcep/patients.csv", true)  //Set true for append mode
-                            );
-                        String mapString = map.toString();
-                        patientWriter.newLine();   //Add new line
-                        patientWriter.write(mapString);
-                        patientWriter.close();
-			
-			String firstName = map.get("first_name");
+
+                        String firstName = map.get("first_name");
                         String lastName = map.get("last_name");
                         String mrn = map.get("mrn");
                         String zipcode = map.get("zip_code");
                         String statusCode = map.get("patient_status_code");
                         OVertex patient = db.newVertex("Patient");
-                        Date dateTime = new Date();
-                        if (checkStatus == true) {
-                            int numNewPatients = 0;
-                            // try (ODatabaseSession db2 = orientdb.open("patient", "root", "rootpwd")) {
-                            if (count != 0) {
-                                String timeInterval = "t" + count;
-                                String onAlert = "Y";
-                                String offAlert = "N";
-                                int numZipsOnalert = 0;
-                                OResultSet patients = db.query("SELECT * FROM Patient WHERE timeInterval = ? AND statusCode = '2' OR statusCode = '5' OR statusCode = '6'",
-                                        timeInterval);
-                                System.out.println(timeInterval);
-                                while (patients.hasNext()) {
-                                    OResult p = patients.next();
-                                    String zip = p.getProperty("zipcode");
-                                    OResultSet zipdetails = db.query("SELECT * FROM ZipDetails WHERE zip = ?",
-                                            zip);
 
-                                    String numPatients = zipdetails.next().getProperty("numPatients");
-                                    String unUpdatedPatients = zipdetails.next().getProperty("patients");
-                                    int prevTimeNumPatient = Integer.parseInt(unUpdatedPatients);
-                                    int growthRateAlertPatients = 2 * prevTimeNumPatient;
-
-                                    int numOldPatients = Integer.parseInt(numPatients);
-                                    numNewPatients = numOldPatients + 1;
-                                    db.command("UPDATE ZipDetails SET numPatients = ? WHERE zip  = ?", numNewPatients,
-                                            zip);
-                                    System.out.println("UPDATE numPatients");
-
-                                    if (numNewPatients >= growthRateAlertPatients) {
-                                        db.command("UPDATE ZipDetails SET onAlert = ? WHERE zip = ?", onAlert, zip);
-                                        System.out.println("UPDATE onalert");
-
-                                        numZipsOnalert++;
-                                    } else {
-                                        db.command("UPDATE ZipDetails SET onAlert = ? WHERE zip = ?", offAlert, zip);
-                                        System.out.println("UPDATE offalert");
-
-                                    }
-                                }
-                                if (numZipsOnalert >= 5) {
-                                    db.command("UPDATE Patient SET stateAlert = ?", onAlert);
-                                    System.out.println("UPDATE statealert");
-
-                                } else {
-                                    db.command("UPDATE Patient SET stateAlert = ?", onAlert);
-
-                                    System.out.println("UPDATE statealertoff");
-                                }
-                            }
-                            // pool.close();
-                            // orientdb2.close();
-                            // }catch(Exception e){
-                            // System.out.println(e);
-                            // } finally {
-                            // orientdb.close();
-                            // }
-                            checkStatus = false;
-                        }
                         Timer timer = new Timer();
                         timer.schedule(new TimerTask() {
 
@@ -178,14 +98,12 @@ public class TopicConnector {
                             public void run() {
                                 // TODO Auto-generated method stub
                                 System.out.println("15 seconds passed!");
+                                // updateZip(count);
                                 count++;
-                                checkStatus = true;
                             }
-                        }
 
-                                , 15000);
+                        }, 15000);
                         String timeInterval = "t" + count;
-                        patient.setProperty("dateTime", dateTime);
                         patient.setProperty("timeInterval", timeInterval);
                         patient.setProperty("firstName", firstName);
                         patient.setProperty("lastName", lastName);
@@ -193,16 +111,22 @@ public class TopicConnector {
                         patient.setProperty("zipcode", zipcode);
                         patient.setProperty("statusCode", statusCode);
                         patient.save();
-                        List<HashMap<String, String>> listForCsv = new ArrayList<HashMap<String, String>>();
-                        HashMap<String, String> csvMap;
-                        csvMap = new HashMap<String, String>();
-                        csvMap.put("timeInterval", timeInterval);
-                        csvMap.put("zipcode", zipcode);
-                        csvMap.put("onAlert", "N");
-                        listForCsv.add(csvMap);
-                        // updateZipDb(listForCsv);
-
                         determineHospital(patient, zipcode, statusCode, db);
+                        patient.save();
+                        // BufferedWriter patientWriter = new BufferedWriter(
+                        //         new FileWriter("src/main/java/cs505pubsubcep/patients.csv", true) // Set true for append
+                        //                                                                           // mode
+                        // );
+                        ArrayList<String> csvMap = new ArrayList<String>();
+
+                        if (statusCode.equals("2") || statusCode.equals("5") || statusCode.equals("6")) {
+                            csvMap.add(timeInterval);
+                            csvMap.add(zipcode);
+                        }
+                        // String mapString = csvMap.toString();
+                        // patientWriter.newLine(); // Add new line
+                        // // patientWriter.write(mapString);
+                        // patientWriter.close();
                         Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                     }
                     System.out.println(
@@ -224,7 +148,6 @@ public class TopicConnector {
             ex.printStackTrace();
         }
     }
-
 
     public static void determineHospital(OVertex patient, String zipcode, String statusCode, ODatabaseSession db) {
         Double shortestDistance = 100000000.0000;

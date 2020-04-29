@@ -167,6 +167,9 @@ public class API {
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
 
+        DatabaseSetup.resetZipDB("Zip");
+        DatabaseSetup.createZipDB("Zip");
+
         // attempt to reset - returns true if successful
         wasReset = DatabaseSetup.reset_db(dbName);
         // update reset status if reset was successful
@@ -188,7 +191,7 @@ public class API {
         ArrayList<String> zipList = new ArrayList<String>();
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
-        String dbname = "patient";
+        String dbname = "Zip";
         String login = "root";
         String password = "rootpwd";
         String onAlert = "Y";
@@ -196,7 +199,9 @@ public class API {
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
-            OResultSet zipsOnAlert = db.query("SELECT * FROM ZipDetails WHERE onAlert = ?", onAlert);
+            OResultSet zipsOnAlert = db.query("SELECT DISTINCT zip FROM Zip WHERE onAlert = ?", onAlert);
+
+            // OResultSet zipsOnAlert = db.query("SELECT * FROM ZipDetails WHERE onAlert = ?", onAlert);
             while(zipsOnAlert.hasNext()){
                 OResult row = zipsOnAlert.next();
                 String zip = row.getProperty("zip");
@@ -220,6 +225,7 @@ public class API {
     public Response alertList(@HeaderParam("X-Auth-API-Key") String authKey) {
         int statusState = 0;
         int alertCount = 0;
+        String onAlert = "Y";
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
         String dbname = "patient";
@@ -229,15 +235,15 @@ public class API {
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
-            OResultSet zipsOnAlert = db.query("SELECT onAlert FROM ZipDetails");
+            OResultSet zipsOnAlert = db.query("SELECT DISTINCT zip FROM Zip WHERE onAlert = ?", onAlert);
             while(zipsOnAlert.hasNext()){
                 OResult isStateOnAlert = zipsOnAlert.next();
-                String onAlert = isStateOnAlert.getProperty("onAlert");
-                System.out.println("onAlert = " + onAlert);
-                if(onAlert.equals("Y")){
-                    alertCount++;
-                    System.out.println("alertCount = " + alertCount);
-                }
+                // String isAlert = isStateOnAlert.getProperty("onAlert");
+                // if(isAlert.equals("Y")){
+                //     alertCount++;
+                //     System.out.println("alertCount = " + alertCount);
+                // }
+                alertCount++;
             }
             if(alertCount >= 5){
                 statusState = 1;
