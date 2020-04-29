@@ -15,8 +15,8 @@ import java.net.URI;
 
 public class Launcher {
 
-    // public static final String API_SERVICE_KEY = "12062818"; //Amberlyn's
-    public static final String API_SERVICE_KEY = "12145986"; //Change this to your student id
+    public static final String API_SERVICE_KEY = "12062818"; //Amberlyn's
+    //public static final String API_SERVICE_KEY = "12145986"; //Change this to your student id
     public static final int WEB_PORT = 8088;
     public static String inputStreamName = null;
     public static long accessCount = -1;
@@ -26,13 +26,16 @@ public class Launcher {
     public static CEPEngine cepEngine = null;
 
     public static void main(String[] args) throws IOException {
-
+	
         String dbName = "patient";
-        // boolean wasReset = DatabaseSetup.reset_db(dbName);
-        // if(wasReset == true){
-            // DatabaseSetup.createDB(dbName);
-        // }
-
+       /* boolean wasReset = DatabaseSetup.reset_db(dbName);
+        if(wasReset == true){
+            DatabaseSetup.createDB(dbName);
+        }
+	else{
+		System.out.println("DATABASE NOT RESET");
+	}
+	*/
         System.out.println("Starting CEP...");
         //Embedded database initialization
 
