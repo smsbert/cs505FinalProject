@@ -1,8 +1,5 @@
 package cs505pubsubcep.Topics;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
@@ -73,7 +70,7 @@ public class TopicConnector {
 
                 List<Map<String, String>> incomingList = gson.fromJson(message, typeOf);
                 // connect database
-                OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+                OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
                 // open database session
 
@@ -87,8 +84,7 @@ public class TopicConnector {
                         String statusCode = map.get("patient_status_code");
                         OVertex patient = db.newVertex("Patient");
                         Date dateTime = new Date();
-                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			patient.setProperty("dateTime", dateFormat.format(dateTime));
+                        patient.setProperty("dateTime", dateTime);
                         patient.setProperty("firstName", firstName);
                         patient.setProperty("lastName", lastName);
                         patient.setProperty("mrn", mrn);
