@@ -1,17 +1,9 @@
 package cs505pubsubcep.Topics;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -26,14 +18,11 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
-import cs505pubsubcep.DatabaseSetup;
 import cs505pubsubcep.Launcher;
 
 public class TopicConnector {
 
     private Gson gson;
-    public static int count;
-    public static boolean checkStatus;
 
     final Type typeOf = new TypeToken<List<Map<String, String>>>() {
     }.getType();
@@ -67,7 +56,7 @@ public class TopicConnector {
             channel.queueBind(queueName, EXCHANGE_NAME, "#");
 
             System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
-            count = 0;
+
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 String message = new String(delivery.getBody(), "UTF-8");
                 System.out.println(
@@ -75,7 +64,7 @@ public class TopicConnector {
 
                 List<Map<String, String>> incomingList = gson.fromJson(message, typeOf);
                 // connect database
-                OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+                OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
                 File file = new File("src/main/java/cs505pubsubcep/patients.csv");
                 file.createNewFile();
@@ -90,21 +79,6 @@ public class TopicConnector {
                         String zipcode = map.get("zip_code");
                         String statusCode = map.get("patient_status_code");
                         OVertex patient = db.newVertex("Patient");
-
-                        Timer timer = new Timer();
-                        timer.schedule(new TimerTask() {
-
-                            @Override
-                            public void run() {
-                                // TODO Auto-generated method stub
-                                System.out.println("15 seconds passed!");
-                                // updateZip(count);
-                                count++;
-                            }
-
-                        }, 15000);
-                        String timeInterval = "t" + count;
-                        patient.setProperty("timeInterval", timeInterval);
                         patient.setProperty("firstName", firstName);
                         patient.setProperty("lastName", lastName);
                         patient.setProperty("mrn", mrn);
@@ -113,20 +87,6 @@ public class TopicConnector {
                         patient.save();
                         determineHospital(patient, zipcode, statusCode, db);
                         patient.save();
-                        // BufferedWriter patientWriter = new BufferedWriter(
-                        //         new FileWriter("src/main/java/cs505pubsubcep/patients.csv", true) // Set true for append
-                        //                                                                           // mode
-                        // );
-                        ArrayList<String> csvMap = new ArrayList<String>();
-
-                        if (statusCode.equals("2") || statusCode.equals("5") || statusCode.equals("6")) {
-                            csvMap.add(timeInterval);
-                            csvMap.add(zipcode);
-                        }
-                        // String mapString = csvMap.toString();
-                        // patientWriter.newLine(); // Add new line
-                        // // patientWriter.write(mapString);
-                        // patientWriter.close();
                         Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                     }
                     System.out.println(
@@ -134,14 +94,11 @@ public class TopicConnector {
 
                 } catch (Exception e) {
                     System.out.println(e);
-                } finally {
-                    orientdb.close();
-                }
+                } 
                 System.out.println("");
                 System.out.println("");
-                // pool.close();
+                orientdb.close();
             };
-
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
             });
         } catch (Exception ex) {
@@ -153,7 +110,6 @@ public class TopicConnector {
         Double shortestDistance = 100000000.0000;
         String shortestZip = "";
         String locationId = "";
-        System.out.println("STATUSCODE = " + statusCode);
         if (statusCode.equals("0") || statusCode.equals("1") || statusCode.equals("2") || statusCode.equals("4")) {
             patient.setProperty("hospitalId", "0"); // Meaning patient was assigned to stay home
         } else if (statusCode.equals("3") || statusCode.equals("5")) {
@@ -161,9 +117,6 @@ public class TopicConnector {
                     "SELECT * FROM ZipDistance WHERE zipFrom = ? AND zipTo IN (SELECT zip FROM Hospital WHERE NOT availableBeds = '0')",
                     zipcode);
             // compare distance
-            System.out.println("LOOK HERE");
-            // System.out.println("zipFrom = " + zipFrom + " zipTo = " + zipTo + " distance
-            // = " + distance);
             while (distances.hasNext()) {
                 OResult row = distances.next();
                 String zipTo = row.getProperty("zipTo");
@@ -171,8 +124,6 @@ public class TopicConnector {
                 if (distance.compareTo(shortestDistance) < 0) {
                     shortestDistance = distance;
                     shortestZip = zipTo;
-                    System.out.println("shortestZip = " + shortestZip + " zipcode = " + zipcode);
-                    System.out.println("Distance = " + shortestDistance);
                 }
             }
 

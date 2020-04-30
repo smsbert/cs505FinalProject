@@ -1,7 +1,6 @@
 package cs505pubsubcep;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
@@ -13,12 +12,8 @@ import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.OVertex;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
-import com.orientechnologies.orient.core.sql.executor.OResult;
-import com.orientechnologies.orient.core.sql.executor.OResultSet;
-import com.orientechnologies.orient.core.sql.operator.OQueryOperator.ORDER;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
-import org.jvnet.hk2.internal.SystemDescriptor;
 
 // docker run -d --name orientdb -p 2424:2424 -p 2480:2480 -e ORIENTDB_ROOT_PASSWORD=rootpwd orientdb:2.2
 
@@ -30,7 +25,7 @@ public class DatabaseSetup {
 
     public static boolean reset_db(String name) {
         boolean wasSuccessful = false;
-        orientdb = new OrientDB("remote:localhost", "root", "rootpwd", OrientDBConfig.defaultConfig());
+        orientdb = new OrientDB("remote:smsb222.cs.uky.edu", "root", "rootpwd", OrientDBConfig.defaultConfig());
 
         // Remove Old Database
         if (orientdb.exists(name)) {
@@ -232,7 +227,6 @@ public class DatabaseSetup {
         patient.createProperty("mrn", OType.STRING);
         patient.createProperty("zipcode", OType.STRING);
         patient.createProperty("statusCode", OType.STRING);
-        patient.createProperty("timeInterval", OType.STRING);
         patient.createProperty("hospitalId", OType.STRING);
         patient.createProperty("stateAlert", OType.STRING);
         return patient;
@@ -258,25 +252,27 @@ public class DatabaseSetup {
     public static OClass createStateAlertClass(ODatabaseSession db, OClass stateAlert) {
         stateAlert = db.createVertexClass("StateAlert");
         stateAlert.createProperty("onAlert", OType.STRING);
-        OVertex stateAlerrtVertex = db.newVertex("StateAlert");
-        stateAlerrtVertex.setProperty("onAlert", "N");
+        OVertex stateAlertVertex = db.newVertex("StateAlert");
+        stateAlertVertex.setProperty("onAlert", "N");
+        stateAlertVertex.save();
         return stateAlert;
     }
-    public void updateHospitalDB(String filepath) {
-        String dbname = "patient";
-        int updatedBedCount = 0;
-        String hospitalId = "";
 
-        OrientGraph graphDB = new OrientGraph("localhost:patient", login, password);
-        graphDB.command(
-                new OCommandSQL("UPDATE Hospital availableBeds = " + updatedBedCount + "WHERE id = " + hospitalId))
-                .execute();
-    }
+    // public void updateHospitalDB(String filepath) {
+    //     String dbname = "patient";
+    //     int updatedBedCount = 0;
+    //     String hospitalId = "";
+
+    //     OrientGraph graphDB = new OrientGraph("localhost:patient", login, password);
+    //     graphDB.command(
+    //             new OCommandSQL("UPDATE Hospital availableBeds = " + updatedBedCount + "WHERE id = " + hospitalId))
+    //             .execute();
+    // }
 
     public static void createDB(String dbname) {
 
         // connect database
-        orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+        orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
@@ -305,7 +301,7 @@ public class DatabaseSetup {
     }
 
     public static void resetZipDB(String name) {
-        orientdb = new OrientDB("remote:localhost", "root", "rootpwd", OrientDBConfig.defaultConfig());
+        orientdb = new OrientDB("remote:smsb222.cs.uky.edu", "root", "rootpwd", OrientDBConfig.defaultConfig());
         // Remove Old Database
         if (orientdb.exists(name)) {
             orientdb.drop(name);
@@ -316,7 +312,7 @@ public class DatabaseSetup {
     }
 
     public static void createZipDB(String name) {
-        orientdb = new OrientDB("remote:localhost", "root", "rootpwd", OrientDBConfig.defaultConfig());
+        orientdb = new OrientDB("remote:smsb222.cs.uky.edu", "root", "rootpwd", OrientDBConfig.defaultConfig());
         try (ODatabaseSession db = orientdb.open(name, login, password);) {
             OClass zipClass = db.getClass("Zip");
             OClass numPatients = db.getClass("NumPatients");

@@ -3,10 +3,7 @@ package cs505pubsubcep.httpcontrollers;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.Socket;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,8 +34,6 @@ public class API {
     private javax.inject.Provider<org.glassfish.grizzly.http.server.Request> request;
 
     private Gson gson;
-
-    private String[] alertZipList;
 
     public DatabaseSetup dbSetup = new DatabaseSetup();
 
@@ -144,7 +139,7 @@ public class API {
         Map<String, Object> responseMap = new HashMap<>();
         int appStatusCode = 0;
 
-        try (Socket s = new Socket("localhost", 8088)) {
+        try (Socket s = new Socket("smsb222.cs.uky.edu", 8088)) {
             appStatusCode = 1; // if app is online set status code to 1
         } catch (Exception e) {
             System.out.println(e);
@@ -194,17 +189,15 @@ public class API {
         String dbname = "Zip";
         String login = "root";
         String password = "rootpwd";
-        String onAlert = "Y";
-        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+        OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
-            OResultSet zipsOnAlert = db.query("SELECT DISTINCT zip FROM Zip WHERE onAlert = ?", onAlert);
+            OResultSet zipsOnAlert = db.query("SELECT DISTINCT(zipcode) FROM NumPatients WHERE alertStatus = 'Y'");
 
-            // OResultSet zipsOnAlert = db.query("SELECT * FROM ZipDetails WHERE onAlert = ?", onAlert);
             while(zipsOnAlert.hasNext()){
                 OResult row = zipsOnAlert.next();
-                String zip = row.getProperty("zip");
+                String zip = row.getProperty("zipcode");
                 zipList.add(zip);
             }
         }
@@ -225,25 +218,20 @@ public class API {
     public Response alertList(@HeaderParam("X-Auth-API-Key") String authKey) {
         int statusState = 0;
         int alertCount = 0;
-        String onAlert = "Y";
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
-        String dbname = "patient";
+        String dbname = "Zip";
         String login = "root";
         String password = "rootpwd";
-        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+        OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
-            OResultSet zipsOnAlert = db.query("SELECT DISTINCT zip FROM Zip WHERE onAlert = ?", onAlert);
+            OResultSet zipsOnAlert = db.query("SELECT DISTINCT(zipcode) FROM NumPatients WHERE alertStatus = 'Y'");
             while(zipsOnAlert.hasNext()){
                 OResult isStateOnAlert = zipsOnAlert.next();
-                // String isAlert = isStateOnAlert.getProperty("onAlert");
-                // if(isAlert.equals("Y")){
-                //     alertCount++;
-                //     System.out.println("alertCount = " + alertCount);
-                // }
                 alertCount++;
+                System.out.println("ALERTCOUNT = " + alertCount);
             }
             if(alertCount >= 5){
                 statusState = 1;
@@ -271,7 +259,7 @@ public class API {
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
 
-        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+        OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
@@ -337,7 +325,7 @@ public class API {
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
 
-        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+        OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
@@ -372,7 +360,7 @@ public class API {
         int numBedsTaken = 0;
         Map<String, Object> responseMap = new HashMap<>();
 
-        OrientDB orientdb = new OrientDB("remote:localhost", OrientDBConfig.defaultConfig());
+        OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
         // open database session
         try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
