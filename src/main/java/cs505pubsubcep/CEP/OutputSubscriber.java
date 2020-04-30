@@ -166,14 +166,10 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
                             System.out.println("GROWTH WAS DOUBLED");
                             newNumPatient.setProperty("alertStatus", "Y");
                             newNumPatient.save();
-                            // zipDb.command("UPDATE NumPatients SET alertStatus = Y WHERE zipcode = ?",
-                            // zipCode);
                         } else {
                             System.out.println("NO GROWTH");
                             newNumPatient.setProperty("alertStatus", "N");
                             newNumPatient.save();
-                            // zipDb.command("UPDATE NumPatients SET alertStatus = N WHERE zipcode = ?",
-                            // zipCode);
                         }
                     }
                     // check how many zipcodes are in alert
@@ -187,13 +183,11 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
                     }
                     System.out.println("NUMZIPSINALERT = " + numZipsInAlert);
                     if (numZipsInAlert > 5) {
-                        // OResultSet update = zipDb.execute("NoSQL", "UPDATE StateAlert SET onAlert =
-                        // Y");
                         OResultSet alertState = zipDb.query("SELECT * FROM StateAlert");
                         while (alertState.hasNext()) {
                             OResult row3 = alertState.next();
                             Optional<OVertex> vertex = row3.getVertex();
-                            // vertex.get().setProperty("onAlert", "Y");
+                            vertex.get().setProperty("onAlert", "Y");
                         }
                         System.out.println("ALERT SHOULD BE Y");
                     } else {
@@ -201,10 +195,8 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
                         while (alertState.hasNext()) {
                             OResult row4 = alertState.next();
                             Optional<OVertex> vertex = row4.getVertex();
-                            // vertex.get().setProperty("onAlert", "N");
+                            vertex.get().setProperty("onAlert", "N");
                         }
-                        // OResultSet update = zipDb.execute("NoSQL", "UPDATE StateAlert SET onAlert =
-                        // N");
                         System.out.println("ALERT SHOULD BE N");
                     }
                 }
