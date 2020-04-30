@@ -55,7 +55,7 @@ public class Launcher {
         // "insert into PatientOutStream; ";
 
         String queryString = " " +
-        "from PatientInStream#window.timeBatch(5 sec) " +
+        "from PatientInStream#window.timeBatch(15 sec) " +
         "select zip_code, patient_status_code " +
         "insert into PatientOutStream; ";
         // END MODIFY
