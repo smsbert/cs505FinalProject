@@ -27,13 +27,13 @@ public class Launcher {
 
     public static void main(String[] args) throws IOException {
 
-        DatabaseSetup.resetZipDB("Zip");
-        DatabaseSetup.createZipDB("Zip");
-        String dbName = "patient";
-        boolean wasReset = DatabaseSetup.reset_db(dbName);
-        if (wasReset == true) {
-            DatabaseSetup.createDB(dbName);
-        }
+        // DatabaseSetup.resetZipDB("Zip");
+        // DatabaseSetup.createZipDB("Zip");
+        // String dbName = "patient";
+        // boolean wasReset = DatabaseSetup.reset_db(dbName);
+        // if (wasReset == true) {
+            // DatabaseSetup.createDB(dbName);
+        // }
 
         System.out.println("Starting CEP...");
         // Embedded database initialization
@@ -55,7 +55,7 @@ public class Launcher {
         // "insert into PatientOutStream; ";
 
         String queryString = " " +
-        "from PatientInStream#window.timeBatch(5 sec) " +
+        "from PatientInStream#window.timeBatch(15 sec) " +
         "select zip_code, patient_status_code " +
         "insert into PatientOutStream; ";
         // END MODIFY

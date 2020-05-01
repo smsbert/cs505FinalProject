@@ -56,7 +56,7 @@ public class API {
     @GET
     @Path("/checkmycep")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response checkMyEndpoint(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response checkMyEndpoint() {
         String responseString = "{}";
         try {
 
@@ -94,7 +94,7 @@ public class API {
     @GET
     @Path("/getaccesscount")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAccessCount(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response getAccessCount() {
         String responseString = "{}";
         try {
 
@@ -132,7 +132,7 @@ public class API {
     @GET
     @Path("/getteam")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTeam(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response getTeam() {
         String teamName = "404 Team Name Not Found";
         String[] teamMemberSids = { "12145986", "12062818" };
         String responseString = "{}";
@@ -155,7 +155,7 @@ public class API {
     @GET
     @Path("/reset")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response reset(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response reset() {
         int resetStatusCode = 0;
         boolean wasReset = false;
         String dbName = "patient";
@@ -182,7 +182,7 @@ public class API {
     @GET
     @Path("/zipalertlist")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response zipAlertList(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response zipAlertList() {
         ArrayList<String> zipList = new ArrayList<String>();
         String responseString = "{}";
         Map<String, Object> responseMap = new HashMap<>();
@@ -215,7 +215,7 @@ public class API {
     @GET
     @Path("/alertlist")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response alertList(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response alertList() {
         int statusState = 0;
         int alertCount = 0;
         String responseString = "{}";
@@ -249,7 +249,7 @@ public class API {
     @GET
     @Path("/testcount")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response testCount(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response testCount() {
         int numPositive = 0;
         int numNegative = 0;
         String dbname = "patient";
@@ -317,7 +317,7 @@ public class API {
     @GET
     @Path("/getpatient/{mrn}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPatient(@HeaderParam("X-Auth-API-Key") String authKey, @PathParam("mrn") String mrn) {
+    public Response getPatient(@PathParam("mrn") String mrn) {
         String locationCode = "-1";
         String dbname = "patient";
         String login = "root";
@@ -349,7 +349,7 @@ public class API {
     @GET
     @Path("/gethospital/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getHospital(@HeaderParam("X-Auth-API-Key") String authKey, @PathParam("id") String id) {
+    public Response getHospital(@PathParam("id") String id) {
         String dbname = "patient";
         String login = "root";
         String password = "rootpwd";

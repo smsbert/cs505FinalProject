@@ -94,11 +94,12 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
                     // find the number of patients who tested positive
                     System.out.println("TIMEINTERVAL = " + timeInterval);
                     System.out.println("ZIPCODE = " + zipCode);
-                    // String query = "SELECT * FROM Zip WHERE zipcode = " + zipCode + " AND timeInterval = '"
-                            // + timeInterval + "'";
-                    OResultSet numberPositive = zipDb.query("SELECT * FROM Zip WHERE zipcode = ? AND timeInterval = '?'", zipCode, timeInterval);
-                    System.out.println("NUMBERPOSITIVE = " + numberPositive.stream().findFirst());
-                    System.out.println("ISPRSESNT = " + numberPositive.stream().findFirst().isPresent());
+                    String query = "SELECT * FROM Zip WHERE zipcode = " + zipCode + " AND timeInterval = '"
+                            + timeInterval + "'";
+                    System.out.println("QUERY  = " + query);
+                    OResultSet numberPositive = zipDb.query(query);
+                    // System.out.println("NUMBERPOSITIVE = " + numberPositive.stream().findFirst());
+                    // System.out.println("ISPRSESNT = " + numberPositive.stream().findFirst().isPresent());
 
                     while (numberPositive.hasNext()) {
                         System.out.println("INSIDE WHILE");
@@ -119,9 +120,8 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
                     newNumPatient.save();
                     if (count == 0) {
                         int currentNumberPositive = 0;
-                        OResultSet currentNumPos = zipDb.query(
-                                "SELECT * FROM NumPatients WHERE zipcode = ? AND timeInterval = '?'", zipCode,
-                                timeInterval);
+                        String query2 =  "SELECT * FROM NumPatients WHERE zipcode = " + zipCode + " AND timeInterval = '" + timeInterval + "'";
+                        OResultSet currentNumPos = zipDb.query(query2);
                         while (currentNumPos.hasNext()) {
                             OResult pos = currentNumPos.next();
                             String property = pos.getProperty("numPatients");
@@ -135,12 +135,10 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
                     }
                     if (count != 0) { // if this is not the first 15 seconds
                         String prevTimeInterval = "t" + (count - 1); // previous time interval
-                        OResultSet currentNumPos = zipDb.query(
-                                "SELECT * FROM NumPatients WHERE zipcode = ? AND timeInterval = '?'", zipCode,
-                                timeInterval);
-                        OResultSet prevNumPos = zipDb.query(
-                                "SELECT * FROM NumPatients WHERE zipcode = ? AND timeInterval = '?'", zipCode,
-                                prevTimeInterval);
+                        String query3 = "SELECT * FROM NumPatients WHERE zipcode = " + zipCode + " AND timeInterval = '" + timeInterval + "'";
+                        OResultSet currentNumPos = zipDb.query(query3);
+                        String query4 = "SELECT * FROM NumPatients WHERE zipcode = " + zipCode + " AND timeInterval = '" + prevTimeInterval + "'";
+                        OResultSet prevNumPos = zipDb.query(query4);
 
                         int currentNumberPositive = 0;
                         while (currentNumPos.hasNext()) {
@@ -174,9 +172,8 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
                     }
                     // check how many zipcodes are in alert
                     int numZipsInAlert = 0;
-                    OResultSet totalZipsInAlert = zipDb.query(
-                            "SELECT DISTINCT(zipcode) FROM NumPatients WHERE alertStatus = 'Y' AND timeInterval = '?'",
-                            timeInterval);
+                    String query5 = "SELECT DISTINCT(zipcode) FROM NumPatients WHERE alertStatus = 'Y' AND timeInterval = '" + timeInterval + "'";
+                    OResultSet totalZipsInAlert = zipDb.query(query5);
                     while (totalZipsInAlert.hasNext()) {
                         OResult nextZip = totalZipsInAlert.next();
                         numZipsInAlert++;
