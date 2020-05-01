@@ -25,6 +25,7 @@ import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
 import cs505pubsubcep.DatabaseSetup;
 import cs505pubsubcep.Launcher;
+import cs505pubsubcep.CEP.OutputSubscriber;
 import cs505pubsubcep.CEP.accessRecord;
 
 @Path("/api")
@@ -42,12 +43,12 @@ public class API {
     }
 
     // check local
-    // curl --header "X-Auth-API-key:1234" "http://localhost:8088/api/checkmycep"
+    // curl --header "X-Auth-API-key:1234" "http://smsb222.cs.uky.edu:8088/api/checkmycep"
 
     // check remote
     // curl --header "X-Auth-API-key:1234"
     // "http://[linkblueid].cs.uky.edu:8082/api/checkmycep"
-    // curl --header "X-Auth-API-key:1234" "http://localhost:8081/api/checkmycep"
+    // curl --header "X-Auth-API-key:1234" "http://smsb222.cs.uky.edu:8081/api/checkmycep"
 
     // check remote
     // curl --header "X-Auth-API-key:1234"
@@ -189,23 +190,26 @@ public class API {
         String dbname = "Zip";
         String login = "root";
         String password = "rootpwd";
-        OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
+        // OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
-        // open database session
-        try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
-            OResultSet zipsOnAlert = db.query("SELECT DISTINCT(zipcode) FROM NumPatients WHERE alertStatus = 'Y'");
+        // // open database session
+        // try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
+        //     OResultSet zipsOnAlert = db.query("SELECT DISTINCT(zipcode) FROM NumPatients WHERE alertStatus = 'Y'");
 
-            while(zipsOnAlert.hasNext()){
-                OResult row = zipsOnAlert.next();
-                String zip = row.getProperty("zipcode");
-                zipList.add(zip);
-            }
-        }
-        catch (Exception e){
-            System.out.println(e);
-        }
+        //     while(zipsOnAlert.hasNext()){
+        //         OResult row = zipsOnAlert.next();
+        //         String zip = row.getProperty("zipcode");
+        //         zipList.add(zip);
+        //     }
+        // }
+        // catch (Exception e){
+        //     System.out.println(e);
+        // }
 
-        orientdb.close();
+
+        // orientdb.close();
+
+        zipList = OutputSubscriber.getZipsOnAlert();
         responseMap.put("ziplist", zipList);
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
@@ -226,21 +230,25 @@ public class API {
         OrientDB orientdb = new OrientDB("remote:smsb222.cs.uky.edu", OrientDBConfig.defaultConfig());
 
         // open database session
-        try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
-            OResultSet zipsOnAlert = db.query("SELECT DISTINCT(zipcode) FROM NumPatients WHERE alertStatus = 'Y'");
-            while(zipsOnAlert.hasNext()){
-                OResult isStateOnAlert = zipsOnAlert.next();
-                alertCount++;
-                System.out.println("ALERTCOUNT = " + alertCount);
-            }
-            if(alertCount >= 5){
-                statusState = 1;
-            }
+        // try (ODatabaseSession db = orientdb.open(dbname, login, password);) {
+        //     OResultSet zipsOnAlert = db.query("SELECT DISTINCT(zipcode) FROM NumPatients WHERE alertStatus = 'Y'");
+        //     while(zipsOnAlert.hasNext()){
+        //         OResult isStateOnAlert = zipsOnAlert.next();
+        //         alertCount++;
+        //         System.out.println("ALERTCOUNT = " + alertCount);
+        //     }
+        //     if(alertCount >= 5){
+        //         statusState = 1;
+        //     }
+        // }
+        // catch (Exception e){
+        //     System.out.println(e);
+        // }
+        // orientdb.close();
+        ArrayList<String> alertZips = OutputSubscriber.getZipsOnAlert();
+        if(alertZips.size() >= 5){
+            statusState = 1;
         }
-        catch (Exception e){
-            System.out.println(e);
-        }
-        orientdb.close();
         responseMap.put("state_status", String.valueOf(statusState));
         responseString = gson.toJson(responseMap);
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();

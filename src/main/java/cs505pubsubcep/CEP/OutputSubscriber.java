@@ -24,6 +24,8 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
 
     private String topic;
 
+    public static ArrayList<String> zipcodesCurrentlyOnAlert = new ArrayList<String>();
+
     public static int count = 0;
 
     public OutputSubscriber(String topic, String streamName) {
@@ -87,7 +89,9 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
                 } catch (Exception e) {
                     System.out.println(e);
                 }
+
                 // for each distinct zip code
+                zipcodesCurrentlyOnAlert.clear();
                 System.out.println("Distinct zips = " + distinctZipCodes);
                 for (String zipCode : distinctZipCodes) {
                     int numPos = 0;
@@ -164,6 +168,7 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
                             System.out.println("GROWTH WAS DOUBLED");
                             newNumPatient.setProperty("alertStatus", "Y");
                             newNumPatient.save();
+                            zipcodesCurrentlyOnAlert.add(zipCode);
                         } else {
                             System.out.println("NO GROWTH");
                             newNumPatient.setProperty("alertStatus", "N");
@@ -179,7 +184,7 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
                         numZipsInAlert++;
                     }
                     System.out.println("NUMZIPSINALERT = " + numZipsInAlert);
-                    if (numZipsInAlert > 5) {
+                    if (numZipsInAlert >= 5) {
                         OResultSet alertState = zipDb.query("SELECT * FROM StateAlert");
                         while (alertState.hasNext()) {
                             OResult row3 = alertState.next();
@@ -208,6 +213,12 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
         }
         count++;
     }
+
+
+    public static ArrayList<String> getZipsOnAlert(){
+        return zipcodesCurrentlyOnAlert;
+    }
+
 
     @Override
     public String getTopic() {

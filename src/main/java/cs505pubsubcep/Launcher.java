@@ -27,13 +27,13 @@ public class Launcher {
 
     public static void main(String[] args) throws IOException {
 
-        // DatabaseSetup.resetZipDB("Zip");
-        // DatabaseSetup.createZipDB("Zip");
-        // String dbName = "patient";
-        // boolean wasReset = DatabaseSetup.reset_db(dbName);
-        // if (wasReset == true) {
-            // DatabaseSetup.createDB(dbName);
-        // }
+        DatabaseSetup.resetZipDB("Zip");
+        DatabaseSetup.createZipDB("Zip");
+        String dbName = "patient";
+        boolean wasReset = DatabaseSetup.reset_db(dbName);
+        if (wasReset == true) {
+            DatabaseSetup.createDB(dbName);
+        }
 
         System.out.println("Starting CEP...");
         // Embedded database initialization
